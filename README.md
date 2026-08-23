@@ -1,7 +1,7 @@
 # Dynamo + Generative Design — Water Treatment Plant Layout / 수처리시설 배치 자동화
 
 **Revit Dynamo와 Generative Design으로 수처리시설(정수장·하수처리장) 배치를 자동화하는 12시간 실무 교육 자료입니다.**
-CAD 도면 정리부터 대안 생성, Revit 요소 변환, 출력 Sheet 구성까지 전 과정을 다룹니다.
+CAD 도면 정리부터 대안 생성, Revit 요소 변환, 출력 Sheet 구성까지 다룹니다.
 
 Course materials for a 12-hour hands-on program: automating **water treatment plant layout**
 with **Revit Dynamo** and **Generative Design**, from CAD data preparation through
@@ -13,43 +13,50 @@ alternative generation to Revit elements and drawing sheets.
 
 ---
 
-## 무엇이 들어 있나 / What is here
-
-| 폴더 | 주제 | Topic |
-|---|---|---|
-| `01_cad-prep` | CAD Data 변형 및 Dynamo 인식 — 대지·시설물 정보 정리 | CAD import, layer filtering, polyline closure |
-| `02_layout-basics` | 공간·시설물 REC 이동 — 단수/다중 이동, 회전, 겹침 | Rectangle translation, rotation, overlap |
-| `03_gd-connection` | Dynamo → Generative Design 연결 원리 | Inputs/outputs binding for the solver |
-| `04_placement-rules` | 배치 기준 및 배치 규칙 고도화 | Placement criteria and rule refinement |
-| `05_output-criteria` | 출력 설정 — 판단 기준 설정 | Objective and constraint definition |
-| `06_revit-elements` | 대안 생성 및 Revit 요소 검토 | Converting alternatives into Revit elements |
-| `07_sheets` | 출력 Sheet 구성 — 결과물 대안 Sheet | Assembling results onto sheets |
-
-**포함되지 않은 것 / Not included**
-- 집필 중인 교재 원고 (비공개)
-- 실제 프로젝트 데이터 — 여기의 샘플은 전부 **교육용 합성 데이터**입니다
-
----
-
 ## 요구 환경 / Requirements
 
-| | |
-|---|---|
-| Revit | *(버전 확정 후 기입)* |
-| Dynamo for Revit | *(버전 확정 후 기입)* |
-| Generative Design for Revit | 설치 필요 |
+| | 버전 | 확인 근거 |
+|---|---|---|
+| **Revit** | **2024** | 샘플 모델 헤더 `Format: 2024`, `Build: 20231029_1515 (x64)` |
+| **Dynamo for Revit** | **2.19.3.6394** | 모든 `.dyn` 파일의 `Version` 필드 |
+| **Generative Design for Revit** | 패키지 **6.1.1.0** | `시설 배치 관련 v2.dyn` 의 `NodeLibraryDependencies` |
 
-> `.dyn` 파일은 Dynamo 버전이 다르면 노드가 깨질 수 있습니다. 위 버전을 먼저 확인하세요.
+> ⚠️ Dynamo 버전이 다르면 노드가 깨질 수 있습니다. **Revit 2025 이상은 Dynamo 3.x** 라서 그대로 열리지 않을 수 있습니다.
+> 위 버전은 추정이 아니라 파일에서 직접 읽은 값입니다.
 
 ---
 
-## 시작하기 / Getting started
+## 무엇이 들어 있나 / What is here
 
-```
-1. 이 저장소를 내려받는다 (Code → Download ZIP)
-2. 01_cad-prep 부터 순서대로 연다
-3. 각 폴더의 README.md 에 그 단계의 목표와 함정이 적혀 있다
-```
+### `01_layout-method` — 공간(시설) 배치 방법론 (1일차 오후)
+
+Rectangle(REC) 이동·회전·겹침. 세 단계로 이어지는 `.dyn` 3개.
+
+| 파일 | 노드 |
+|---|---:|
+| `SAMPLE 1.dyn` | 37 |
+| `SAMPLE 1-1.dyn` | 60 |
+| `SAMPLE 1-1-1 겹침 제외.dyn` | 117 |
+
+### `02_layout-application` — 공간(시설) 배치 응용 (2일차)
+
+`시설 배치 관련 v2.dyn` (노드 142). Generative Design 연결 → 배치 규칙 → 출력 기준 →
+Revit 요소 변환 → 시트 구성이 한 그래프에 이어져 있습니다.
+
+> **샘플 Revit 모델(`시설 배치 Sample.rvt`)은 아직 포함돼 있지 않습니다.**
+> 파일 내부에 이전 프로젝트 경로가 남아 있어 정리 후 추가할 예정입니다.
+
+### `docs`
+
+- `curriculum.md` — 12시간 커리큘럼
+- `01_cad-prep.md` — CAD Data 변형 및 Dynamo 인식 (1일차 오전, **샘플 파일 없이 설명만**)
+
+---
+
+## 포함되지 않은 것 / Not included
+
+- 집필 중인 교재 원고 — 비공개
+- 실제 프로젝트 데이터 — 여기의 샘플은 전부 **교육용 자료**이며 특정 시설을 나타내지 않습니다
 
 ---
 

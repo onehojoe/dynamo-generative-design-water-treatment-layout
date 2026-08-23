@@ -39,3 +39,6 @@ desktop.ini
 # 의도적으로 넣을 때만:  git add -f <파일>
 *.nwd
 *.nwc
+
+# 대용량 샘플 (Releases 로)
+*.rvt
