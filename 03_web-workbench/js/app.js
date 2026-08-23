@@ -8,6 +8,7 @@ const state = {
   gallery: [],   // {id, seeds, result}
   selected: -1,
   sortKey: "cost",
+  view: null,    // null = 자동 Fit / {scale, tx, ty} = 사용자 줌·팬 상태 (장치px 기준)
 };
 
 function opts() {
@@ -31,15 +32,47 @@ function makeView(canvas, boundary, pad) {
   };
 }
 
-// ---------- 메인 캔버스 ----------
+// ---------- 메인 캔버스: Fit + 줌·팬 ----------
+// Fit = 대지경계 ∪ 배치 박스 ∪ 출입을 화면에 맞추는 변환 계산 (장치px 기준)
+function computeFit(canvas) {
+  const pts = SITE_DATA.boundary.slice();
+  SITE_DATA.entries.forEach((e) => pts.push([e.cx - e.r, e.cy - e.r], [e.cx + e.r, e.cy + e.r]));
+  if (state.result) {
+    state.result.placed.forEach((p) =>
+      pts.push([p.cx - p.w / 2, p.cy - p.h / 2], [p.cx + p.w / 2, p.cy + p.h / 2]));
+  }
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const dpr = window.devicePixelRatio || 1;
+  const pad = 30 * dpr;
+  const dx = maxX - minX || 1, dy = maxY - minY || 1;
+  const scale = Math.min((canvas.width - 2 * pad) / dx, (canvas.height - 2 * pad) / dy);
+  // 변환: sx = tx + wx*scale · sy = ty - wy*scale (y 위가 북쪽)
+  return {
+    scale,
+    tx: (canvas.width - dx * scale) / 2 - minX * scale,
+    ty: (canvas.height - dy * scale) / 2 + maxY * scale,
+  };
+}
+
+function mainView(canvas) {
+  if (!state.view) state.view = computeFit(canvas);
+  const v = state.view;
+  return { x: (wx) => v.tx + wx * v.scale, y: (wy) => v.ty - wy * v.scale, s: v.scale };
+}
+
 function drawMain() {
   const canvas = $("plan");
+  const wrap = $("planWrap");
   const dpr = window.devicePixelRatio || 1;
-  const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
-  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  const cssW = wrap.clientWidth, cssH = wrap.clientHeight;
+  if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+    canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+  }
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const v = makeView(canvas, SITE_DATA.boundary, 30 * dpr);
+  const v = mainView(canvas);
   const r = state.result;
 
   // 대지경계
@@ -255,10 +288,50 @@ function buildSliders() {
   });
 }
 
-window.addEventListener("resize", () => { drawMain(); drawParallel(); });
+// ---------- 줌·팬·Fit ----------
+function bindViewControls() {
+  const canvas = $("plan");
+  const dpr = () => window.devicePixelRatio || 1;
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    if (!state.view) state.view = computeFit(canvas);
+    const v = state.view;
+    const px = e.offsetX * dpr(), py = e.offsetY * dpr();
+    const f = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+    v.tx = px - (px - v.tx) * f;
+    v.ty = py - (py - v.ty) * f;
+    v.scale *= f;
+    drawMain();
+  }, { passive: false });
+  let drag = null;
+  canvas.addEventListener("pointerdown", (e) => {
+    drag = { x: e.clientX, y: e.clientY };
+    canvas.classList.add("panning");
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    if (!state.view) state.view = computeFit(canvas);
+    state.view.tx += (e.clientX - drag.x) * dpr();
+    state.view.ty += (e.clientY - drag.y) * dpr();
+    drag = { x: e.clientX, y: e.clientY };
+    drawMain();
+  });
+  const endDrag = (e) => {
+    drag = null;
+    canvas.classList.remove("panning");
+    if (e.pointerId !== undefined && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+  };
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+  $("btnFit").onclick = () => { state.view = null; drawMain(); };
+}
+
+window.addEventListener("resize", () => { state.view = null; drawMain(); drawParallel(); });
 
 document.addEventListener("DOMContentLoaded", () => {
   buildSliders();
+  bindViewControls();
   $("btnRun").onclick = runOnce;
   $("btnGen").onclick = generateGallery;
   $("btnReset").onclick = () => {

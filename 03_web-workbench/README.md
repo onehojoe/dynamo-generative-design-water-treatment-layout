@@ -11,6 +11,9 @@ An interactive reproduction of the layout logic — run the placement study
 **`RUN.bat` 더블클릭.** 그게 전부입니다 — 서버·설치·인터넷 불필요(데이터는 `js/data.js`에 내장).
 수동 실행: `index.html`을 브라우저로 열기.
 
+화면 조작: **휠 = 줌 · 드래그 = 이동 · 우상단 `⤢ Fit` = 형상 화면 맞춤**. 화면은 한 페이지에
+고정되며(세로 스크롤 없음) 창 크기를 바꾸면 자동으로 다시 맞춘다.
+
 받은 직후 점검(선택): `python tools/selfcheck.py` — 파일·스키마·RUN.bat 인코딩·엔진 결정성 4종.
 
 ## 무엇을 재현했나 / What is reproduced

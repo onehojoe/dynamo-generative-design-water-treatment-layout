@@ -7,15 +7,21 @@
 <style>
   :root { --bg:#ffffff; --ink:#1d2b1d; --line:#d8ded8; --accent:#2a6f2a; }
   * { box-sizing: border-box; }
-  body { margin:0; font-family:"Malgun Gothic","Segoe UI",sans-serif; background:var(--bg); color:var(--ink); }
-  header { padding:10px 16px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  html, body { height:100%; }
+  body { margin:0; font-family:"Malgun Gothic","Segoe UI",sans-serif; background:var(--bg); color:var(--ink);
+         display:flex; flex-direction:column; overflow:hidden; }
+  header { flex:0 0 auto; padding:8px 16px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
   header h1 { font-size:17px; margin:0; }
   header .sub { color:#667; font-size:12px; }
   .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:#fde8e8; color:#a22; border:1px solid #eaa; }
-  main { display:grid; grid-template-columns: 1fr 330px; gap:0; height: calc(100vh - 46px); }
-  #left { display:flex; flex-direction:column; min-width:0; }
-  #plan { flex:1 1 55%; width:100%; min-height:280px; }
-  #pcplot { flex:0 0 150px; width:100%; border-top:1px solid var(--line); }
+  main { flex:1 1 auto; min-height:0; display:grid; grid-template-columns: 1fr 330px; gap:0; }
+  #left { display:flex; flex-direction:column; min-width:0; min-height:0; }
+  /* 캔버스는 절대배치로 분리 — width/height 속성 변경이 레이아웃을 다시 키우는 되먹임(상하 밀림) 차단 */
+  #planWrap { flex:1 1 auto; min-height:120px; position:relative; overflow:hidden; }
+  #plan { position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; }
+  #plan.panning { cursor:grabbing; }
+  #btnFit { position:absolute; top:8px; right:8px; z-index:2; padding:4px 10px; font-size:12px; }
+  #pcplot { flex:0 0 150px; width:100%; height:150px; display:block; border-top:1px solid var(--line); }
   #galleryWrap { flex:0 0 190px; border-top:1px solid var(--line); overflow-x:auto; overflow-y:hidden;
                  display:flex; align-items:stretch; padding:6px; gap:6px; }
   #gallery { display:flex; gap:6px; }
@@ -44,19 +50,23 @@
   .warn { color:#a22; font-size:12px; }
   .ok { color:#2a6f2a; font-size:12px; }
   footer.note { font-size:11px; color:#778; line-height:1.5; margin-top:14px; border-top:1px dashed var(--line); padding-top:8px; }
-  @media (max-width: 900px) { main { grid-template-columns: 1fr; } #panel { border-left:none; border-top:1px solid var(--line); } }
+  @media (max-width: 900px) { body { overflow:auto; } main { grid-template-columns: 1fr; }
+    #planWrap { min-height:320px; } #panel { border-left:none; border-top:1px solid var(--line); } }
 </style>
 </head>
 <body>
 <header>
-  <h1>정수장 시설배치 워크벤치 <span style="font-weight:normal">v0.1</span></h1>
+  <h1>정수장 시설배치 워크벤치 <span style="font-weight:normal">v0.2</span></h1>
   <span class="sub">Water Treatment Plant Layout Workbench — Dynamo GD 그래프의 브라우저 재현 (교육용)</span>
   <span class="badge">비용 단가 미검증</span>
   <span class="badge">Dynamo 실행값 대조 미실시</span>
 </header>
 <main>
   <div id="left">
-    <canvas id="plan"></canvas>
+    <div id="planWrap">
+      <canvas id="plan" title="휠=줌 · 드래그=이동"></canvas>
+      <button id="btnFit" title="형상을 화면에 맞춤 (휠 줌·드래그 이동 후 복귀)">⤢ Fit</button>
+    </div>
     <canvas id="pcplot" title="평행좌표 — 시드 11 + Count + Length&Cost"></canvas>
     <div id="galleryWrap"><div id="gallery"></div></div>
   </div>
@@ -101,8 +111,8 @@
     </footer>
   </div>
 </main>
-<script src="js/data.js"></script>
-<script src="js/engine.js"></script>
-<script src="js/app.js"></script>
+<script src="js/data.js?v=0.2"></script>
+<script src="js/engine.js?v=0.2"></script>
+<script src="js/app.js?v=0.2"></script>
 </body>
 </html>
