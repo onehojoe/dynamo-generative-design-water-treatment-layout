@@ -7,7 +7,7 @@ Course materials for a 12-hour hands-on program: automating **water treatment pl
 with **Revit Dynamo** and **Generative Design**, from CAD data preparation through
 alternative generation to Revit elements and drawing sheets.
 
-> 📄 Blog write-up: *(발행 후 링크)*
+> 📄 Blog write-up: [Dynamo Generative Design for Water Treatment Plant Layout](https://weeklydynamo.blogspot.com/2026/08/dynamo-generative-design-water-treatment-plant-layout.html) — WeeklyDynamo (영문 + 한국어 전문)
 > 🎥 Background — Autodesk University 2025, *Exploring the Dynamo Product Road Map and Vision for the Future* (27:30):
 > https://www.autodesk.com/autodesk-university/class/Exploring-the-Dynamo-Product-Road-Map-and-Vision-for-the-Future-2025
 
