@@ -42,3 +42,6 @@ desktop.ini
 
 # 대용량 샘플 (Releases 로)
 *.rvt
+
+# local distribution zips
+_dist/

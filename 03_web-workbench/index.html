@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정수장 시설배치 워크벤치 v0.1 — WTP Layout Workbench</title>
+<style>
+  :root { --bg:#ffffff; --ink:#1d2b1d; --line:#d8ded8; --accent:#2a6f2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Malgun Gothic","Segoe UI",sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:10px 16px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; }
+  header .sub { color:#667; font-size:12px; }
+  .badge { font-size:11px; padding:2px 8px; border-radius:10px; background:#fde8e8; color:#a22; border:1px solid #eaa; }
+  main { display:grid; grid-template-columns: 1fr 330px; gap:0; height: calc(100vh - 46px); }
+  #left { display:flex; flex-direction:column; min-width:0; }
+  #plan { flex:1 1 55%; width:100%; min-height:280px; }
+  #pcplot { flex:0 0 150px; width:100%; border-top:1px solid var(--line); }
+  #galleryWrap { flex:0 0 190px; border-top:1px solid var(--line); overflow-x:auto; overflow-y:hidden;
+                 display:flex; align-items:stretch; padding:6px; gap:6px; }
+  #gallery { display:flex; gap:6px; }
+  .card { border:1px solid var(--line); border-radius:6px; padding:4px; cursor:pointer; background:#fff;
+          display:flex; flex-direction:column; align-items:center; font-size:11px; }
+  .card:hover { border-color:var(--accent); }
+  .card.sel { outline:2px solid #d33; }
+  .card .meta { line-height:1.35; text-align:center; }
+  #panel { border-left:1px solid var(--line); padding:12px; overflow-y:auto; font-size:13px; }
+  #panel h2 { font-size:13px; margin:14px 0 6px; color:var(--accent); }
+  .srow { display:flex; align-items:center; gap:6px; margin:3px 0; }
+  .srow label { flex:0 0 150px; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .srow input[type=range] { flex:1; min-width:60px; }
+  .srow .val { flex:0 0 24px; text-align:right; font-size:11px; }
+  .chip { width:10px; height:10px; border-radius:2px; border:1px solid #0003; flex:0 0 10px; }
+  .prow { display:flex; align-items:center; gap:6px; margin:4px 0; }
+  .prow label { flex:1; font-size:12px; }
+  .prow input, .prow select { width:80px; }
+  button { padding:6px 10px; border:1px solid var(--accent); background:#eef6ee; color:var(--ink);
+           border-radius:5px; cursor:pointer; font-size:13px; }
+  button:hover { background:#dfeedf; }
+  button.primary { background:var(--accent); color:#fff; }
+  .outbox { border:1px solid var(--line); border-radius:6px; padding:8px 10px; margin-top:6px; }
+  .outbox .row { display:flex; justify-content:space-between; margin:2px 0; }
+  .outbox .row b { font-variant-numeric: tabular-nums; }
+  .warn { color:#a22; font-size:12px; }
+  .ok { color:#2a6f2a; font-size:12px; }
+  footer.note { font-size:11px; color:#778; line-height:1.5; margin-top:14px; border-top:1px dashed var(--line); padding-top:8px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } #panel { border-left:none; border-top:1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>정수장 시설배치 워크벤치 <span style="font-weight:normal">v0.1</span></h1>
+  <span class="sub">Water Treatment Plant Layout Workbench — Dynamo GD 그래프의 브라우저 재현 (교육용)</span>
+  <span class="badge">비용 단가 미검증</span>
+  <span class="badge">Dynamo 실행값 대조 미실시</span>
+</header>
+<main>
+  <div id="left">
+    <canvas id="plan"></canvas>
+    <canvas id="pcplot" title="평행좌표 — 시드 11 + Count + Length&Cost"></canvas>
+    <div id="galleryWrap"><div id="gallery"></div></div>
+  </div>
+  <div id="panel">
+    <h2>배치 시드 (Dynamo 슬라이더 11개 재현)</h2>
+    <div id="sliders"></div>
+    <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap">
+      <button id="btnRun" class="primary">배치 실행</button>
+      <button id="btnReset">dyn 저장값으로</button>
+    </div>
+
+    <h2>출력 (dyn 출력 재현: Count · Length &amp; Cost)</h2>
+    <div class="outbox">
+      <div class="row"><span>배치 수 Count</span><b id="outCount">–</b></div>
+      <div class="row"><span>연결 길이 Length</span><b id="outLength">–</b></div>
+      <div class="row"><span>Length &amp; Cost</span><b id="outCost">–</b></div>
+      <div id="outFailed" class="ok"></div>
+    </div>
+
+    <h2>파라미터</h2>
+    <div class="prow"><label>후보점 그리드 N×N (dyn: 51)</label><input id="gridN" type="number" min="11" max="101" step="2" value="51"></div>
+    <div class="prow"><label>제외영역 이격 (m, dyn: 10~15)</label><input id="clearance" type="number" min="0" max="50" step="1" value="10"></div>
+    <div class="prow"><label>비용 단가 (원/m) <span class="warn">미검증</span></label><input id="costRate" type="number" min="0" step="100" value="1"></div>
+
+    <h2>대안 탐색 (GD Randomize 재현)</h2>
+    <div class="prow"><label>생성 개수</label><input id="altCount" type="number" min="1" max="200" value="30"></div>
+    <div class="prow"><label>정렬</label>
+      <select id="sortKey">
+        <option value="cost">Count↓ · L&amp;C↑</option>
+        <option value="length">Count↓ · Length↑</option>
+        <option value="count">Count만</option>
+      </select>
+    </div>
+    <button id="btnGen" class="primary" style="width:100%; margin-top:4px">대안 생성 → 갤러리·평행좌표</button>
+
+    <footer class="note">
+      데이터: Dynamo 그래프 <i>2500726 정수장 python 최적화 v1.dyn</i>의 Remember 캐시 직독
+      (대지경계·시설 박스 11종·출입). 시설명은 AU 2025 발표
+      <i>Water Treatment Plant Design with Generative Design</i> 기준. 교육용 샘플이며 실제 시설이 아님.<br>
+      ★사양 이식 한계: Dynamo List.Shuffle은 시드가 없어 실행마다 다르다. 여기서는 결정적 시드 셔플로
+      대체했으므로 같은 시드는 항상 같은 배치를 낸다. Dynamo 실행값과의 수치 대조는 미실시.
+    </footer>
+  </div>
+</main>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

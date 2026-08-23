@@ -46,10 +46,18 @@ Revit 요소 변환 → 시트 구성이 한 그래프에 이어져 있습니다
 > **샘플 Revit 모델(`시설 배치 Sample.rvt`)은 아직 포함돼 있지 않습니다.**
 > 파일 내부에 이전 프로젝트 경로가 남아 있어 정리 후 추가할 예정입니다.
 
+### `03_web-workbench` — 브라우저 배치 워크벤치 (Revit·Dynamo 불필요)
+
+배치 그래프의 로직을 브라우저에 이식한 교육 도구. **`RUN.bat` 더블클릭이 전부**
+(서버·설치·인터넷 불필요). 시드 슬라이더 11개 → 배치 → Count·Length&Cost →
+대안 갤러리·평행좌표(GD Outcome 화면 재현). 상세·정직 고지는 폴더 안 `README.md`.
+
 ### `docs`
 
 - `curriculum.md` — 12시간 커리큘럼
 - `01_cad-prep.md` — CAD Data 변형 및 Dynamo 인식 (1일차 오전, **샘플 파일 없이 설명만**)
+- `dyn-update-review.md` — 배치 dyn 업데이트 가능성 검토 (GD 결선·셔플 시드화 등 7항목)
+- `blog-draft_web-workbench.md` — 블로그 초안 (미발행)
 
 ---
 
