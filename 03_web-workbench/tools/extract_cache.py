@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 r"""dyn Remember 캐시 → js/data.js 재생성 도구.
 
-원본: 2500726 정수장 python 최적화 v1.dyn (02 공간(시설) 배치 응용\cad 인식 등 set 폴더본.
-      2025 AU 폴더본은 캐시가 비어 있어 쓸 수 없다 — 반드시 캐시 보유본을 지정할 것).
+원본: 2500726 정수장 python 최적화 v1.dyn — 반드시 Data.Remember 캐시를 보유한
+      저장본을 지정할 것(캐시를 비운 사본은 쓸 수 없다 — 스크립트가 FAIL로 알린다).
 사용: python tools/extract_cache.py "<dyn 경로>"
 인자 없이 실행하면 기존 js/data.js를 덮어쓰지 않고 검사만 한다.
 """
