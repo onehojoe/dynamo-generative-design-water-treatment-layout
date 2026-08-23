@@ -40,8 +40,5 @@ desktop.ini
 *.nwd
 *.nwc
 
-# 대용량 샘플 (Releases 로)
-*.rvt
-
 # local distribution zips
 _dist/
