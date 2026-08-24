@@ -1,5 +1,5 @@
 // app.js — 화면·갤러리·평행좌표·필터·내보내기 (엔진은 engine.js, 데이터는 data.js)
-// v0.3: 평행좌표 브러시 필터 · 파레토 표시 · CSV/JSON/PNG 내보내기 · 퍼머링크 · 범례/스케일바/북
+// v0.3.1: 평행좌표 브러시 필터 · 파레토 표시 · CSV/JSON/PNG 내보내기 · 퍼머링크 · 범례/스케일바/북
 "use strict";
 
 const $ = (id) => document.getElementById(id);
@@ -92,8 +92,9 @@ function drawScaleBar(ctx, canvas, v, dpr) {
 }
 
 function drawNorth(ctx, canvas, dpr) {
-  // 우상단은 범례/Fit 버튼이 덮는다(v0.3 헤드리스 캡처에서 확인) → 좌상단에 둔다
-  const x = 30 * dpr, y = 24 * dpr, r = 12 * dpr;
+  // 좌상단은 캔버스가 낮을 때 범례가 올라와 덮고, 우상단 맨 위는 범례/Fit 버튼이 덮는다
+  // (둘 다 헤드리스 캡처에서 실제로 확인) → 우상단 '툴바 아래'로 내린다
+  const x = canvas.width - 26 * dpr, y = 56 * dpr, r = 12 * dpr;
   ctx.strokeStyle = "#333"; ctx.fillStyle = "#333"; ctx.lineWidth = 1.5 * dpr;
   ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x - r * 0.45, y + r * 0.6); ctx.lineTo(x, y + r * 0.25);
   ctx.lineTo(x + r * 0.45, y + r * 0.6); ctx.closePath(); ctx.fill();
@@ -102,12 +103,19 @@ function drawNorth(ctx, canvas, dpr) {
   ctx.textAlign = "start";
 }
 
+// 범례는 좌하단에 붙지만, 캔버스가 낮으면 위로 넘쳐 헤더까지 밀고 올라간다(v0.3.1 수정).
+// 순서: 보통 크기 → 안 들어가면 축약(글자·행간 축소) → 그래도 안 들어가면 그리지 않는다.
+// 반환값 = 실제로 그렸는지 (북 화살표 배치가 이걸 본다)
 function drawLegend(ctx, canvas, dpr) {
   const rows = SITE_DATA.placeOrder.map((i) => SITE_DATA.boxes[i]);
-  const lh = 14 * dpr, padX = 8 * dpr, padY = 7 * dpr;
-  ctx.font = `${10.5 * dpr}px sans-serif`;
+  const avail = canvas.height - 46 * dpr;              // 스케일바(하단)와 여백을 뺀 높이
+  let fs = 10.5, lh0 = 14, padY0 = 7;
+  let h = rows.length * lh0 * dpr + padY0 * 2 * dpr;
+  if (h > avail) { fs = 9; lh0 = 11.5; padY0 = 5; h = rows.length * lh0 * dpr + padY0 * 2 * dpr; }
+  if (h > avail) return false;                          // 축약해도 안 들어가면 포기 (겹치는 것보다 낫다)
+  const lh = lh0 * dpr, padX = 8 * dpr, padY = padY0 * dpr;
+  ctx.font = `${fs * dpr}px sans-serif`;
   const w = Math.max(...rows.map((b) => ctx.measureText(`[${b.label}] ${b.name}`).width)) + 22 * dpr + padX * 2;
-  const h = rows.length * lh + padY * 2;
   const x0 = 16 * dpr, y0 = canvas.height - 34 * dpr - h;
   ctx.fillStyle = "rgba(255,255,255,0.88)"; ctx.strokeStyle = "#c8d0c8"; ctx.lineWidth = 1 * dpr;
   ctx.fillRect(x0, y0, w, h); ctx.strokeRect(x0, y0, w, h);
@@ -119,6 +127,7 @@ function drawLegend(ctx, canvas, dpr) {
     ctx.fillText(`[${b.label}] ${b.name}`, x0 + padX + 14 * dpr, y + 1 * dpr);
   });
   ctx.textBaseline = "alphabetic";
+  return true;
 }
 
 function drawMain() {
@@ -190,7 +199,7 @@ function drawMain() {
     });
   }
 
-  // 도면 보조 표기 (v0.3)
+  // 도면 보조 표기 (v0.3 신설 · v0.3.1 낮은 창 겹침 수정)
   if (state.showLegend) drawLegend(ctx, canvas, dpr);
   drawScaleBar(ctx, canvas, v, dpr);
   drawNorth(ctx, canvas, dpr);
@@ -520,7 +529,7 @@ function exportJson() {
   const payload = {
     source: SITE_DATA._source,
     units: "mm",
-    exported_from: "WTP Layout Workbench v0.3",
+    exported_from: "WTP Layout Workbench v0.3.1",
     alternative_id: state.selected > 0 ? state.selected : null,
     seeds: r.seeds,
     params: { gridN: r.opts.gridN, clearance_mm: r.opts.clearance, cost_rate: r.opts.costRate },
