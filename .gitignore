@@ -42,3 +42,6 @@ desktop.ini
 
 # local distribution zips
 _dist/
+
+# headless QA screenshots / drivers (검수 산출물 — 배포·리포에 넣지 않는다)
+_qa/
