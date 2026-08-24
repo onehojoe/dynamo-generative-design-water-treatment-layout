@@ -11,10 +11,18 @@ An interactive reproduction of the layout logic — run the placement study
 **`RUN.bat` 더블클릭.** 그게 전부입니다 — 서버·설치·인터넷 불필요(데이터는 `js/data.js`에 내장).
 수동 실행: `index.html`을 브라우저로 열기.
 
-화면 조작: **휠 = 줌 · 드래그 = 이동 · 우상단 `⤢ Fit` = 형상 화면 맞춤**. 화면은 한 페이지에
-고정되며(세로 스크롤 없음) 창 크기를 바꾸면 자동으로 다시 맞춘다.
+화면 조작:
 
-받은 직후 점검(선택): `python tools/selfcheck.py` — 파일·스키마·RUN.bat 인코딩·엔진 결정성 4종.
+| 어디 | 조작 |
+|---|---|
+| 평면 | **휠 = 줌 · 드래그 = 이동 · `⤢ Fit` = 화면 맞춤 · `범례` = 범례 표시/숨김** |
+| 평행좌표 | **축 위를 세로로 드래그 = 그 구간만 남기는 필터(브러시) · 축 클릭 = 그 축 필터 해제** |
+| 갤러리 | 카드 클릭 = 그 대안으로 전환(시드 슬라이더까지 따라온다). 노란 테두리 + ★ = 파레토 |
+
+화면은 한 페이지에 고정되며(세로 스크롤 없음) 창 크기를 바꾸면 자동으로 다시 맞춘다.
+
+받은 직후 점검(선택): `python tools/selfcheck.py` — 파일·스키마·RUN.bat 인코딩·엔진 결정성·버전
+일관성·로직 회귀 6종.
 
 ## 무엇을 재현했나 / What is reproduced
 
@@ -26,10 +34,24 @@ An interactive reproduction of the layout logic — run the placement study
 | 제외영역 오프셋 (10~15) | 이격 파라미터 (기본 10 m) |
 | 연결쌍 1-3 · 2-3 · 3-4 · 4-5 · 5-6 · 6-7 · 6-12 · 11-12 | 동일 — 중심 간 거리 합 |
 | 출력: Count · Length & Cost | 동일 + 미배치 경고 |
-| GD Randomize → Outcome 그리드·평행좌표 | 대안 생성 → 갤러리·평행좌표 |
+| GD Randomize → Outcome 그리드·평행좌표 | 대안 생성 → 갤러리·평행좌표 **+ 브러시 필터·파레토** |
 
 시설 번호↔명칭은 AU 2025 발표 *Water Treatment Plant Design with Generative Design* 기준
 ([1] Intake Basin ~ [13] Management Facility, [9,10,11]은 한 박스).
+
+## v0.3에서 더해진 것 (2026-08-24)
+
+1. **평행좌표 브러시 필터** — 축을 세로로 드래그하면 그 값 구간의 대안만 남는다. 여러 축을
+   동시에 걸면 AND로 좁혀진다. 걸러진 대안은 평행좌표에서 흐리게 남아 "무엇을 버렸는지"가 보인다.
+   AU 발표 슬라이드의 GD Outcome 필터가 하던 일이 이것이다.
+2. **파레토(비지배해) 표시** — `Count 최대 · L&C 최소` 기준. 갤러리 노란 테두리 + ★,
+   평행좌표에서 주황 굵은 선. `파레토 대안만 보기` 체크로 후보를 한 번에 좁힌다.
+3. **내보내기 4종** — `대안표 CSV`(표시 중인 대안 전부: 시드 11 + Count/Length/Cost + 파레토),
+   `선택 대안 JSON`(박스 중심좌표 mm까지 — Dynamo에 좌표로 되먹일 수 있는 형식),
+   `평면 PNG`(현재 화면 그대로), `퍼머링크 복사`(시드·파라미터가 담긴 URL).
+4. **퍼머링크** — 주소창 `#s=59.59.45...&g=51&c=10&r=1`. 같은 링크는 항상 같은 배치를 낸다.
+   대안을 메신저로 주고받을 때 스크린샷 대신 링크를 보내면 상대가 그 상태에서 이어서 만진다.
+5. **도면 보조 표기** — 시설 범례 · 스케일바(1·2·5 계열 자동) · 북 표시. PNG로 내보내도 함께 남는다.
 
 ## 정직 고지 — 원본과 다른 점 / Known deviations
 
@@ -42,6 +64,19 @@ An interactive reproduction of the layout logic — run the placement study
    기본 1(=길이가 곧 비용)로 두었다. 화면의 빨간 배지가 그 표시다.
 4. **Dynamo 실행값과의 수치 대조 미실시** — 이 도구는 "사양 이식"이며 "실행값 동치성"은
    Revit에서 원본 그래프를 돌려 대조해야 닫힌다.
+5. **파레토는 2목표 기준** — Count·Cost 두 축만 본다. 실무 제약(이격 법규·동선·지형)은
+   아직 목적함수에 없다. → `docs/dyn-update-plan.md`
+
+## 검증 / What was actually checked
+
+| 게이트 | 도구 | 결과 |
+|---|---|---|
+| 엔진 결정성·기준값 | `tools/selfcheck.py` (node) | 기본 시드 → Count 11 · **1,402 m** (v0.2와 동일. v0.3은 엔진 무변경) |
+| 신규 로직 16종 | `tools/qa_logic.js` | 파레토 독립 재계산 일치 · 브러시 AND · CSV 열 정합 · JSON 좌표 수 · 퍼머링크 왕복 — **16/16 PASS** |
+| 화면 | 헤드리스 크롬 캡처 | 범례·스케일바·북·브러시 구간·파레토 강조 육안 확인 |
+| 버전 표기 | `selfcheck.py` | 제목·헤더·`?v=` 캐시버스트 3곳 일치 |
+
+닫지 못한 것: **Dynamo/Revit 실행값과의 수치 일치**, **비용 단가의 진위**.
 
 ## 데이터 재생성 / Regenerating data
 
@@ -59,7 +94,8 @@ RUN.bat            실행 (ASCII·CRLF — 인코딩 함정 차단 확인됨)
 index.html         화면
 js/data.js         dyn 캐시 추출 데이터 (생성물)
 js/engine.js       배치·채점 엔진 (DOM 무의존 — node로도 실행 가능)
-js/app.js          UI·갤러리·평행좌표
+js/app.js          UI·갤러리·평행좌표·필터·내보내기
 tools/extract_cache.py   dyn → data.js
-tools/selfcheck.py       오프라인 4종 자가검사
+tools/selfcheck.py       오프라인 자가검사 6종
+tools/qa_logic.js        로직 회귀검사 16종 (selfcheck가 호출)
 ```

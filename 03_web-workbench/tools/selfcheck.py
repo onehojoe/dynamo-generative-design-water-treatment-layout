@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """오프라인 자가검사 — 남의 PC에서 받은 직후 실행하는 용도.
 사용: python tools/selfcheck.py   (워크벤치 폴더 어디서 실행해도 됨)
-검사: 파일 존재 / data.js 스키마 / RUN.bat ASCII·CRLF / 엔진 결정성(node 있으면)
+검사: 파일 존재 / data.js 스키마 / RUN.bat ASCII·CRLF / 엔진 결정성 / 버전 일관성 / 로직 회귀(node 있으면)
 """
 import json
 import os
@@ -21,7 +21,8 @@ def check(name, ok, detail=""):
 
 
 # 1. 파일 존재
-required = ["index.html", "RUN.bat", "js/data.js", "js/engine.js", "js/app.js"]
+required = ["index.html", "RUN.bat", "js/data.js", "js/engine.js", "js/app.js",
+            "tools/qa_logic.js"]
 missing = [f for f in required if not os.path.exists(os.path.join(ROOT, f))]
 check("필수 파일 존재", not missing, f"누락 {missing}" if missing else f"{len(required)}개 전부")
 
@@ -63,8 +64,8 @@ console.log(JSON.stringify({same, count:a.count, lengthM:a.lengthM}));
 """
 try:
     env = dict(os.environ, WB_ROOT=ROOT.replace("\\", "/"))
-    r = subprocess.run(["node", "-e", node_js], env=env,
-                       capture_output=True, text=True, timeout=60)
+    r = subprocess.run(["node", "-e", node_js], env=env, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace", timeout=60)
     if r.returncode == 0:
         out = json.loads(r.stdout.strip().splitlines()[-1])
         check("엔진 결정성(node)", out["same"] and out["count"] >= 1,
@@ -75,6 +76,32 @@ except FileNotFoundError:
     print("[SKIP] 엔진 결정성 — node 미설치 (브라우저에서 같은 시드 2회 실행으로 대체 확인 가능)")
 except Exception as e:  # noqa: BLE001
     check("엔진 결정성(node)", False, str(e))
+
+# 5. 버전 표기 일관성 (제목·헤더·캐시버스트가 따로 놀면 사용자가 구버전을 보게 된다)
+try:
+    html = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    import re
+    vers = set(re.findall(r"워크벤치 <span[^>]*>v([0-9.]+)</span>", html))
+    vers |= set(re.findall(r"워크벤치 v([0-9.]+) —", html))
+    busts = set(re.findall(r"\.js\?v=([0-9.]+)", html))
+    ok = len(vers) == 1 and len(busts) == 1 and vers == busts
+    check("버전 표기 일관성", ok, f"표기 {sorted(vers)} · 캐시버스트 {sorted(busts)}")
+except Exception as e:  # noqa: BLE001
+    check("버전 표기 일관성", False, str(e))
+
+# 6. 로직 회귀검사 (node 있으면 실측)
+qa = os.path.join(HERE, "qa_logic.js")
+try:
+    # node는 UTF-8로 출력한다 — 인코딩을 명시하지 않으면 Windows에서 cp949로 읽다 깨진다
+    r = subprocess.run(["node", qa], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", timeout=120)
+    last = [l for l in r.stdout.strip().splitlines() if l.startswith("결과:")]
+    check("로직 회귀검사(qa_logic)", r.returncode == 0,
+          last[-1] if last else r.stderr.strip()[:200])
+except FileNotFoundError:
+    print("[SKIP] 로직 회귀검사 — node 미설치")
+except Exception as e:  # noqa: BLE001
+    check("로직 회귀검사(qa_logic)", False, str(e))
 
 fails = [n for n, ok, _ in results if not ok]
 print(f"\n결과: PASS {len(results) - len(fails)} · FAIL {len(fails)}")
