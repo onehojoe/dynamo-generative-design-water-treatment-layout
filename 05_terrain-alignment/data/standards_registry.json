@@ -1,0 +1,131 @@
+{
+  "_doc": "설계기준 수치 등록부 — 화면에 쓰이는 모든 규정값의 출처와 검증 상태.",
+  "_rule": "verified=false 인 값은 화면에 «수치 미검증» 배지를 띄운다. 원문을 확인한 사람이 verified/source/checked_by/checked_at 를 채운다. 확인 없이 verified 를 true 로 바꾸지 말 것.",
+  "_updated": "2026-08-25",
+  "items": [
+    {
+      "key": "grade_max",
+      "label": "최대 종단경사",
+      "unit": "%",
+      "values": { "60": 8.0, "80": 7.0, "100": 5.0 },
+      "claimed_source": "도로의 구조·시설 기준에 관한 규칙 — 설계속도·지형(평지/산지)별 표",
+      "verified": false,
+      "note": "지형 구분(평지·구릉지·산지)에 따라 값이 갈린다. 현재 구현은 지형 구분을 안 쓰고 단일값이다. 확인 시 지형 구분 축을 추가할 것.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "grade_min",
+      "label": "최소 종단경사(배수)",
+      "unit": "%",
+      "values": { "all": 0.3 },
+      "claimed_source": "배수 실무 관행",
+      "verified": false,
+      "note": "법정 최소치가 아니라 배수 확보를 위한 관행값으로 알고 있다. 근거 확인 필요.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "k_crest",
+      "label": "볼록 종단곡선 변화비율 K",
+      "unit": "m/%",
+      "values": { "60": 11, "80": 21, "100": 39 },
+      "claimed_source": "정지시거 기준 종단곡선 최소 변화비율표",
+      "verified": false,
+      "note": "정지시거 기준과 주행시거 기준이 다르다. 어느 쪽을 쓸지도 함께 확정할 것.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "k_sag",
+      "label": "오목 종단곡선 변화비율 K",
+      "unit": "m/%",
+      "values": { "60": 15, "80": 25, "100": 39 },
+      "claimed_source": "전조등 조사거리 기준",
+      "verified": false,
+      "note": "충격완화·시야 기준과 값이 다를 수 있다.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "slope_cut",
+      "label": "절토 비탈면 기울기 1:m",
+      "unit": "m",
+      "values": { "토사": 1.2, "리핑암": 1.0, "발파암": 0.7 },
+      "claimed_source": "도로설계기준 — 토질·암질별 표준 비탈면",
+      "verified": false,
+      "note": "현재 구현은 단일값(1:1.2)이며 토질 구분·소단을 반영하지 않는다. 높이별 소단(5~7m마다 1~2m)도 미구현.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "slope_fill",
+      "label": "성토 비탈면 기울기 1:m",
+      "unit": "m",
+      "values": { "일반": 1.5, "고성토": 1.8 },
+      "claimed_source": "도로설계기준 — 성토 높이별 표준 비탈면",
+      "verified": false,
+      "note": "높이 구간별로 값이 달라진다. 현재는 단일값.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "tunnel_threshold",
+      "label": "터널 전환 절토고",
+      "unit": "m",
+      "values": { "default": 25 },
+      "claimed_source": "없음 — 실무 경제성 비교로 결정되는 값이다",
+      "verified": false,
+      "note": "법정 기준이 아니다. 절토 공사비 + 사토 처리비 vs 터널 공사비 비교가 정답. 임계값 방식은 «빠른 선별»용임을 화면에 명시했다.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "bridge_threshold",
+      "label": "교량 전환 성토고",
+      "unit": "m",
+      "values": { "default": 20 },
+      "claimed_source": "없음 — 실무 경제성 비교로 결정되는 값이다",
+      "verified": false,
+      "note": "위와 같다. 연약지반·하천 횡단 여부가 실제 결정 요인.",
+      "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "min_len_tunnel",
+      "label": "터널 최소연장",
+      "unit": "m",
+      "values": { "default": 100 },
+      "claimed_source": "없음 — 시공성 판단",
+      "verified": false, "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "min_len_bridge",
+      "label": "교량 최소연장",
+      "unit": "m",
+      "values": { "default": 40 },
+      "claimed_source": "없음 — 시공성 판단",
+      "verified": false, "checked_by": null, "checked_at": null
+    },
+    {
+      "key": "r_min",
+      "label": "최소 곡선반경",
+      "unit": "m",
+      "formula": "R = V^2 / (127 (e + f))",
+      "values": { "note": "e·f 는 화면 입력" },
+      "claimed_source": "원심력 평형식 — 교과서 공식. 계수 127 은 단위환산 상수",
+      "verified": true,
+      "note": "공식 자체는 검증 대상이 아니다. 다만 e_max·f(횡방향 마찰계수) 표값은 미검증.",
+      "checked_by": "형태상 자명(단위환산)", "checked_at": "2026-08-25"
+    },
+    {
+      "key": "ls_min",
+      "label": "완화곡선 최소길이",
+      "unit": "m",
+      "claimed_source": "주행시간·jerk·편경사 접속설치·표값 중 지배값",
+      "verified": false,
+      "note": "v1.3 부터 있던 항목. 네 갈래 중 어느 것이 지배인지 화면에 표시되나 표값 자체가 미검증.",
+      "checked_by": null, "checked_at": null
+    }
+  ],
+  "how_to_verify": [
+    "1. 국가법령정보센터에서 「도로의 구조·시설 기준에 관한 규칙」 및 해설을 연다.",
+    "2. 위 items 의 claimed_source 가 가리키는 조·표를 찾아 values 와 대조한다.",
+    "3. 일치하면 verified=true, source 에 조문번호·표번호·발행연도를 적고 checked_by/checked_at 를 채운다.",
+    "4. 불일치하면 values 를 고치고 note 에 «이전값 → 새값, 근거» 를 남긴다.",
+    "5. 고친 뒤 뷰어를 새로고침하면 «수치 미검증» 배지가 검증 완료 개수로 바뀐다.",
+    "★ 확인하지 않은 채 verified 를 true 로 바꾸는 것은 이 파일의 목적을 파괴한다."
+  ]
+}

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>지형·선형 GD 워크벤치</title>
+<style>
+  :root{
+    /* 측량 제도지(survey sheet) 팔레트 — 종이 크림 바탕 · 세피아 잉크.
+       등고선 색을 강조색으로 승격했다. 다크 대시보드 계열과 갈라놓기 위한 것. */
+    --bg:#EFEAE0; --paper:#F7F4EC; --panel:#FBF9F4; --line:#D9D0BE; --line2:#EAE3D6;
+    --ink:#2E2A24; --dim:#7A7264;
+    --acc:#8C5A2B; --acc2:#B07A3E; --ok:#2E7D5B; --warn:#B07A0F; --bad:#B0432F;
+    --obs:#B0432F; --road:#4A7FA5; --align:#C8891F; --pi:#A85F1A;
+    --contour:#B9A88A; --contour2:#8C7A5B; --tunnel:#6B4E9E; --bridge:#2E7D5B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:13px/1.55 "Malgun Gothic","Segoe UI",system-ui,sans-serif}
+  #app{display:flex;height:100vh}
+  #left{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
+  #stage{flex:1;position:relative;min-height:0}
+  #cv{width:100%;height:100%;display:block;cursor:crosshair}
+  #profile{flex:none;height:216px;border-top:1px solid var(--line);background:var(--paper);
+    display:flex;flex-direction:column;transition:height .12s}
+  #profile.off{height:29px}
+  #pfhead{flex:none;height:28px;display:flex;align-items:center;gap:10px;padding:0 10px;
+    border-bottom:1px solid var(--line);font-size:11.5px;color:var(--dim);user-select:none;
+    white-space:nowrap;overflow:hidden}
+  /* 요약은 줄어들고 컨트롤은 절대 밀리지 않는다 */
+  #pfinfo{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  #pfhead .sp{margin-left:0;flex:0 0 auto}
+  #pfhead b{color:var(--ink);font-size:12px}
+  #pfhead .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+  #pfhead .tog{cursor:pointer;color:var(--acc)}
+  #pfhead input[type=range]{width:86px}
+  #pfwrap{flex:1;display:flex;min-height:0}
+  #pfcv{flex:1;display:block;min-width:0}
+  #xscv{flex:none;width:300px;display:block;border-left:1px solid var(--line)}
+  #pfhead{background:var(--panel)}
+  #profile.off #pfwrap{display:none}
+  #hud{position:absolute;left:12px;top:12px;background:rgba(251,249,244,.94);
+    border:1px solid var(--line);border-radius:6px;padding:8px 11px;font-size:12px;pointer-events:none}
+  #hud b{color:var(--acc)}
+  #hud,#legend{box-shadow:0 1px 3px rgba(60,50,35,.13)}
+  #legend{position:absolute;left:12px;bottom:12px;background:rgba(251,249,244,.94);
+    border:1px solid var(--line);border-radius:6px;padding:8px 11px;font-size:11.5px}
+  #legend span{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  #panel{width:360px;background:var(--panel);border-left:1px solid var(--line);
+    overflow-y:auto;padding:0 0 24px}
+  h1{font-size:14.5px;margin:0;padding:14px 15px;border-bottom:2px solid var(--acc);
+    letter-spacing:.2px;background:var(--paper)}
+  h1 small{display:block;color:var(--dim);font-weight:400;font-size:11px;margin-top:3px}
+  .sec{border-bottom:1px solid var(--line2);padding:12px 15px}
+  .sec>h2{font-size:11.5px;letter-spacing:1.2px;color:var(--acc);margin:0 0 10px;
+    font-weight:700;padding-bottom:5px;border-bottom:1px dashed var(--line)}
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0}
+  .row label{flex:1;color:var(--dim);font-size:12px}
+  .row input[type=range]{flex:1.3;accent-color:var(--acc)}
+  .row .val{width:52px;text-align:right;font-family:Consolas,monospace;font-size:11.5px;color:var(--ink)}
+  select,input[type=number]{background:#fff;color:var(--ink);border:1px solid var(--line);
+    border-radius:3px;padding:3px 6px;font-size:12px;font-family:Consolas,monospace}
+  input[type=range]{height:3px}
+  button{background:var(--acc);color:#FBF9F4;border:0;border-radius:3px;padding:7px 13px;
+    font-size:12.5px;cursor:pointer;font-weight:700;letter-spacing:.3px}
+  button:hover{background:var(--acc2)}
+  button.sec2{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600}
+  button.sec2:hover{background:var(--paper)}
+  button:disabled{opacity:.45;cursor:default}
+  table.m{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  table.m td{padding:3px 0;font-size:12px}
+  table.m td:first-child{color:var(--dim)}
+  table.m td:last-child{text-align:right;font-weight:600}
+  .big{font-size:27px;font-weight:700;color:var(--acc);text-align:center;
+    font-variant-numeric:tabular-nums;margin:2px 0 6px}
+  .chip{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:2px;
+    padding:1px 7px;font-size:10.5px;color:var(--dim);margin:2px 3px 2px 0;letter-spacing:.3px}
+  .warn{color:var(--warn)} .bad{color:var(--bad)} .ok{color:var(--ok)} .dim{color:var(--dim)}
+  canvas.mini{width:100%;height:74px;display:block;background:#fff;
+    border:1px solid var(--line);border-radius:4px}
+  .note{font-size:11px;color:var(--dim);line-height:1.45;margin-top:7px}
+  .cks{display:flex;flex-wrap:wrap;gap:9px;font-size:12px}
+  .cks label{color:var(--dim);cursor:pointer;user-select:none}
+  /* 대안 목록 */
+  .clist{max-height:270px;overflow-y:auto;margin-top:7px;border:1px solid var(--line);border-radius:3px;background:#fff}
+  .crow{display:flex;align-items:center;gap:7px;padding:5px 8px;font-size:11.5px;cursor:pointer;
+    border-bottom:1px solid var(--line2);font-variant-numeric:tabular-nums}
+  .crow:last-child{border-bottom:0}
+  .crow:hover{background:var(--paper)}
+  .crow.sel{background:#F1E6D6;box-shadow:inset 3px 0 0 var(--acc)}
+  .crow .n{width:24px;color:var(--dim)}
+  .crow .sc{width:42px;font-weight:700}
+  .crow .ln{width:50px;color:var(--dim)}
+  .crow .pi{width:26px;color:var(--dim)}
+  .crow .st{margin-left:auto;font-size:10px;padding:1px 7px;border-radius:9px;white-space:nowrap}
+  .st.ok{background:#E1EFE7;color:var(--ok)}
+  .st.wn{background:#F6EDD6;color:var(--warn)}
+  .st.bd{background:#F6E0DA;color:var(--bad)}
+  .sumline{display:flex;gap:6px;margin-top:7px;font-size:10.5px}
+  .sumline span{padding:1px 7px;border-radius:9px}
+  /* 대안 갤러리 (Refinery Outcome 그리드 방식) */
+  #gallery{width:0;background:var(--panel);border-right:1px solid var(--line);
+    overflow:hidden;display:flex;flex-direction:column}
+  #gallery.on{width:352px}
+  /* 좌우 폭 조절 손잡이 */
+  .split{width:6px;flex:0 0 6px;background:var(--line2);cursor:col-resize;position:relative}
+  .split:hover,.split.act{background:var(--acc)}
+  .split::after{content:'';position:absolute;left:1px;top:50%;transform:translateY(-50%);
+    width:4px;height:34px;border-radius:2px;background:rgba(60,50,35,.22)}
+  #splitL{display:none}
+  #gallery.on ~ #splitL{display:block}
+  #ghead{padding:11px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+  #ghead h2{font-size:12px;margin:0;letter-spacing:.4px;flex:1}
+  #ghead .x{cursor:pointer;color:var(--dim);font-size:16px;line-height:1}
+  #gbody{flex:1;overflow-y:auto;padding:10px;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;align-content:start}
+  .card{background:#fff;border:1px solid var(--line);border-radius:3px;overflow:hidden;
+    cursor:pointer;position:relative}
+  .card:hover{border-color:var(--acc2)}
+  .card.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+  .card canvas{display:block;width:100%;aspect-ratio:3/2;background:var(--paper)}
+  .cmeta{display:flex;align-items:baseline;gap:5px;padding:5px 7px;font-variant-numeric:tabular-nums}
+  .cmeta b{font-size:13px}
+  .cmeta span{font-size:10.5px;color:var(--dim)}
+  .crank{position:absolute;left:5px;top:5px;background:rgba(46,42,36,.74);color:#F7F4EC;
+    font-size:10px;padding:1px 6px;border-radius:2px}
+  .cbadge{position:absolute;right:5px;top:5px;font-size:9.5px;padding:1px 6px;border-radius:8px}
+  /* 시종점 */
+  .pt{display:flex;align-items:center;gap:7px;margin:5px 0;font-size:11.5px;
+    font-variant-numeric:tabular-nums}
+  .pt .dot{width:10px;height:10px;border-radius:50%}
+  .pt .xy{flex:1;color:var(--dim)}
+  .pt label{color:var(--dim);cursor:pointer;user-select:none;font-size:11px}
+  /* 점 목록 */
+  .prow{display:flex;align-items:center;gap:7px;padding:5px 8px;font-size:11.5px;cursor:pointer;
+    border-bottom:1px solid var(--line2);font-variant-numeric:tabular-nums}
+  .prow:last-child{border-bottom:0}
+  .prow:hover{background:var(--paper)}
+  .prow.act{background:#F1E6D6;box-shadow:inset 3px 0 0 var(--acc)}
+  .prow .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+  .prow .pnm{width:46px;font-weight:600}
+  .prow .pxy{flex:1;color:var(--dim);font-size:10.5px}
+  .prow .puv{color:var(--dim);font-size:10px;width:74px;text-align:right;font-family:Consolas,monospace}
+  .prow input{cursor:pointer}
+  .chip.bad{background:#F6E0DA;color:var(--bad);border-color:#E0BFB6}
+  /* 설계기준 표 */
+  table.std{width:100%;border-collapse:collapse;margin-top:8px;font-size:10.5px;
+    font-variant-numeric:tabular-nums}
+  table.std th{color:var(--dim);font-weight:600;text-align:right;padding:3px 4px;
+    border-bottom:1px solid var(--line)}
+  table.std th:first-child{text-align:left}
+  table.std td{padding:3px 4px;text-align:right;border-bottom:1px solid #1b2129}
+  table.std td:first-child{text-align:left;color:var(--dim)}
+  table.std .ng{color:var(--bad);font-weight:700}
+  table.std .okv{color:var(--ok)}
+  .fx{font-family:Consolas,monospace;font-size:10.5px;color:#9fb3c8;
+    background:#0d1117;border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="gallery">
+    <div id="ghead">
+      <h2>대안 갤러리 <span class="chip" id="gN">0</span></h2>
+      <span class="x" id="gClose">✕</span>
+    </div>
+    <div id="gbody"></div>
+  </div>
+
+  <div class="split" id="splitL"></div>
+
+  <div id="left">
+   <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="hud">로딩…</div>
+    <div id="legend">
+      <span style="background:#B0432F"></span>장애물 &nbsp;
+      <span style="background:#4A7FA5"></span>도로 &nbsp;
+      <span style="background:#C8891F"></span>선형 &nbsp;
+      <span style="background:#A85F1A"></span>PI &nbsp;
+      <span style="background:#7A7264"></span>baseline &nbsp;
+      <span style="background:#8C7A5B"></span>등고선 &nbsp;<span style="background:#6B4E9E"></span>터널 &nbsp;<span style="background:#2E7D5B"></span>교량
+    </div>
+   </div>
+   <div id="profile">
+     <div id="pfhead">
+       <b>종단면</b>
+       <span id="pfinfo">—</span>
+       <span class="sp">
+         <label>과장 V:H</label>
+         <input type="range" id="pfex" min="2" max="40" step="1" value="10">
+         <span class="val" id="pfexv">10</span>
+         <label>측점</label><input type="range" id="xspos" min="0" max="100" step="1" value="50"><span class="val" id="xsposv">—</span>
+         <span class="tog" id="pftog">접기</span>
+       </span>
+     </div>
+     <div id="pfwrap"><canvas id="pfcv"></canvas><canvas id="xscv"></canvas></div>
+   </div>
+  </div>
+
+  <div class="split" id="splitR"></div>
+
+  <div id="panel">
+    <h1>지형 · 선형 GD 워크벤치
+      <small id="src">데이터 로딩 중…</small></h1>
+
+    <div class="sec">
+      <h2>지형 <span class="chip" id="tchip">합성</span></h2>
+      <div class="cks">
+        <label><input type="checkbox" id="lyTerr" checked> 등고선</label>
+        <label><input type="checkbox" id="lyTfill"> 표고 채색</label>
+        <label><input type="checkbox" id="lyBnd" checked> 대지 경계</label>
+        <label><input type="checkbox" id="lyStruct" checked> 터널·교량</label>
+      </div>
+      <div class="note" id="tnote">—</div>
+      <h2 style="margin-top:10px">지형 변수 <span class="chip">GD 1단</span></h2>
+      <div class="row"><label>기준표고 m</label>
+        <input type="range" id="tbase" min="0" max="200" step="5" value="80"><span class="val" id="tbasev">80</span></div>
+      <div class="row"><label>전체경사 방향 °</label>
+        <input type="range" id="tdir" min="0" max="350" step="10" value="210"><span class="val" id="tdirv">210</span></div>
+      <div class="row"><label>전체경사율 %</label>
+        <input type="range" id="tslp" min="0" max="5" step="0.1" value="0.8"><span class="val" id="tslpv">0.8</span></div>
+      <div class="row"><label>산 개수</label>
+        <input type="range" id="tnp" min="0" max="6" step="1" value="3"><span class="val" id="tnpv">3</span></div>
+      <div class="row"><label>산 높이 배율</label>
+        <input type="range" id="tph" min="0.2" max="2.5" step="0.1" value="1"><span class="val" id="tphv">1.0</span></div>
+      <div class="row"><label>산 반경 배율</label>
+        <input type="range" id="tpr" min="0.4" max="2.5" step="0.1" value="1"><span class="val" id="tprv">1.0</span></div>
+      <div class="row"><label>하천 깊이 m</label>
+        <input type="range" id="trd" min="0" max="60" step="1" value="22"><span class="val" id="trdv">22</span></div>
+      <div class="row"><label>하천 폭 m</label>
+        <input type="range" id="trw" min="60" max="800" step="20" value="260"><span class="val" id="trwv">260</span></div>
+      <div class="row"><label>잡음 진폭 m</label>
+        <input type="range" id="tna" min="0" max="30" step="1" value="7"><span class="val" id="tnav">7</span></div>
+      <div class="row"><label>잡음 옥타브</label>
+        <input type="range" id="tno" min="1" max="7" step="1" value="4"><span class="val" id="tnov">4</span></div>
+      <div class="row"><label>지형 시드</label>
+        <input type="number" id="tsd" value="7" min="0" max="99999" style="width:70px">
+        <button id="tdice" class="sec2" style="margin-left:6px">주사위</button></div>
+      <div class="row" style="gap:6px">
+        <button id="tgen">지형 재생성</button>
+        <button id="tundo" class="sec2">원본 복귀</button>
+      </div>
+      <div class="note" id="tgnote"><span class="dim">재생성하면 잡음 구현이 파이썬 초기본과 달라 미세하게 다르다. 산·하천·경사 식은 동일.</span></div>
+    </div>
+    <div class="sec">
+      <h2>구조물 판정 <span class="chip" class="bad">수치 미검증</span></h2>
+      <div class="row"><label>터널 전환 절토고 m</label>
+        <input type="number" id="hTun" value="25" min="5" max="80" step="1" style="width:70px"></div>
+      <div class="row"><label>교량 전환 성토고 m</label>
+        <input type="number" id="hBrg" value="20" min="5" max="80" step="1" style="width:70px"></div>
+      <div class="row"><label>터널 최소연장 m</label>
+        <input type="number" id="lTun" value="100" min="0" max="500" step="10" style="width:70px"></div>
+      <div class="row"><label>교량 최소연장 m</label>
+        <input type="number" id="lBrg" value="40" min="0" max="300" step="10" style="width:70px"></div>
+      <div class="note" id="stnote">—</div>
+      <div class="note"><span class="dim">절토고가 임계를 넘으면 터널, 성토고가 넘으면 교량으로 본다.
+        해당 구간은 토공에서 뺀다. 실무 결정은 경제성 비교이며 여기 임계는 관행값이다.</span></div>
+    </div>
+    <div class="sec">
+      <h2>점 편집 <span class="chip" id="ptN">—</span></h2>
+      <div class="note" style="margin:0 0 7px">
+        캔버스에서 <b>점을 끌어</b> 옮긴다. 행을 클릭하면 그 점으로 <b>화면이 이동</b>한다.
+        <span class="warn">PI는 baseline을 n등분한 자기 구간 안에서만</span> 움직인다(v7 파라미터 제약 — 드래그 중 허용대가 표시된다).
+      </div>
+      <div id="ptList" class="clist" style="max-height:340px"></div>
+      <div class="row" style="gap:6px;margin-top:8px">
+        <button class="sec2" id="ptReset">시종점 원위치</button>
+        <button class="sec2" id="lockAll">전체 고정</button>
+        <button class="sec2" id="galBtn">대안 갤러리</button>
+      </div>
+      <div class="note" id="ptNote"></div>
+    </div>
+
+    <div class="sec">
+      <h2>레이어</h2>
+      <div class="cks">
+        <label><input type="checkbox" id="lyObs" checked> 장애물</label>
+        <label><input type="checkbox" id="lyExtra" checked> 추가장애물</label>
+        <label><input type="checkbox" id="lyRoad" checked> 도로</label>
+        <label><input type="checkbox" id="lySample"> 샘플점</label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>선형 모델</h2>
+      <div class="row">
+        <label>모드</label>
+        <select id="mode">
+          <option value="poly">poly — v7 재현(직선 PI)</option>
+          <option value="arc">arc — 원곡선</option>
+          <option value="spiral">spiral — 완화곡선+원곡선</option>
+        </select>
+      </div>
+      <div class="row"><label>최소곡선반경 R</label><input type="range" id="R" min="100" max="3000" step="50" value="600"><span class="val" id="Rv">600</span></div>
+      <div class="row"><label>완화곡선장 Ls</label><input type="range" id="Ls" min="0" max="400" step="10" value="120"><span class="val" id="Lsv">120</span></div>
+      <div class="row"><label>Active PI</label><input type="range" id="pi" min="1" max="10" step="1" value="5"><span class="val" id="piv">5</span></div>
+      <div class="cks" style="margin:7px 0 3px">
+        <label><input type="checkbox" id="elems" checked> <b>요소 구분</b> — 직선 / 완화곡선 / 원곡선</label>
+      </div>
+      <div class="note" id="elemLegend">
+        <span style="color:#ffd33d">■</span> 직선
+        <span style="color:#d2a8ff">■</span> 완화곡선(클로소이드)
+        <span style="color:#56d4dd">■</span> 원곡선
+        &nbsp;<span class="dim">○ = TS·SC·CS·ST 경계점</span>
+        <div id="elemStat" class="dim" style="margin-top:4px"></div>
+      </div>
+      <div id="viol" class="note"></div>
+    </div>
+
+    <div class="sec">
+      <h2>설계기준 검토 <span class="chip" id="stdTarget">도로</span> <span class="chip bad" id="stdFlag">수치 미검증</span></h2>
+      <div class="row">
+        <label>설계속도 V</label>
+        <select id="Vsel"></select>
+        <span class="val">km/h</span>
+      </div>
+      <div class="row">
+        <label>지역구분</label>
+        <select id="regionSel"></select>
+      </div>
+      <div class="row"><label>최대편경사 e</label><input type="range" id="emax" min="0.02" max="0.10" step="0.01" value="0.06"><span class="val" id="emaxv">0.06</span></div>
+      <div class="note" id="stdCalc"></div>
+      <div class="row" style="gap:6px;margin-top:8px">
+        <button class="sec2" id="applyStd">기준 최소값 적용</button>
+      </div>
+      <div id="stdTable"></div>
+    </div>
+
+
+
+    <div class="sec">
+      <h2>종단 설계 <span class="chip" class="bad">수치 미검증</span></h2>
+      <div class="row">
+        <label>설계속도 V</label>
+        <select id="vdes">
+          <option value="60" selected>60 km/h</option>
+          <option value="80">80 km/h</option>
+          <option value="100">100 km/h</option>
+        </select>
+      </div>
+      <div class="row"><label>최대 종단경사 ±%</label>
+        <input type="number" id="imax" value="8" min="0.5" max="20" step="0.1" style="width:70px"></div>
+      <div class="row"><label>최소 종단경사 %(배수)</label>
+        <input type="number" id="imin" value="0.3" min="0" max="3" step="0.1" style="width:70px"></div>
+      <div class="row"><label>종단곡선 K 볼록</label>
+        <input type="number" id="kcrest" value="11" min="1" max="200" step="1" style="width:70px"></div>
+      <div class="row"><label>종단곡선 K 오목</label>
+        <input type="number" id="ksag" value="15" min="1" max="200" step="1" style="width:70px"></div>
+      <div class="row"><label>도로폭 B m</label>
+        <input type="number" id="bwid" value="20" min="3" max="60" step="0.5" style="width:70px"></div>
+      <div class="row"><label>절토 비탈면 1:m</label>
+        <input type="number" id="mcut" value="1.2" min="0.3" max="3" step="0.1" style="width:70px"></div>
+      <div class="row"><label>성토 비탈면 1:m</label>
+        <input type="number" id="mfill" value="1.5" min="0.5" max="3" step="0.1" style="width:70px"></div>
+      <div class="row"><label>편경사 %</label><input type="number" id="supe" value="2" min="-8" max="8" step="0.5" style="width:70px"></div>
+      <div class="row"><label>단면 반폭 m</label><input type="range" id="xsw" min="40" max="300" step="10" value="120"><span class="val" id="xswv">120</span></div>
+      <div class="cks" style="margin:4px 0"><label><input type="checkbox" id="useSweep" checked> <b>토공을 단면 스윕으로</b> — 실제 지반 횡단형상 사용(끄면 근사식)</label></div>
+      <div class="row"><label>측점 간격 m</label>
+        <input type="range" id="pds" min="5" max="50" step="5" value="20"><span class="val" id="pdsv">20</span></div>
+      <div class="cks" style="margin:4px 0 6px">
+        <label><input type="checkbox" id="gdProf" checked> <b>종단도 GD로 탐색</b> — 계획고·종단곡선을 유전자에 넣는다</label>
+      </div>
+      <div class="row"><label>계획고 탐색폭 ±m</label><input type="range" id="zrng" min="5" max="60" step="5" value="25"><span class="val" id="zrngv">25</span></div>
+      <div class="row"><label>VIP 개수</label>
+        <input type="range" id="nvip" min="2" max="12" step="1" value="6"><span class="val" id="nvipv">6</span></div>
+      <div class="note" id="pfnote">—</div>
+      <div id="pfchk" class="note" style="margin-top:6px"></div>
+    </div>
+
+    <div class="sec">
+      <h2>채점 파라미터 <span class="chip">v7 기본값</span></h2>
+      <div class="row"><label>Design Area Width m</label><input type="range" id="w" min="200" max="6000" step="100" value="3000"><span class="val" id="wv">3000</span></div>
+      <div class="row"><label>Segment Sample</label><input type="range" id="ns" min="5" max="50" step="1" value="25"><span class="val" id="nsv">25</span></div>
+      <div class="row">
+        <label>샘플링 추정량</label>
+        <select id="smode">
+          <option value="v7">v7 원본(구간당 N)</option>
+          <option value="uniform">균일 간격(모드 비교용)</option>
+        </select>
+      </div>
+      <div class="row"><label>균일 샘플 간격 m</label><input type="range" id="sp" min="5" max="200" step="5" value="25"><span class="val" id="spv">25</span></div>
+      <div class="note" id="smnote"></div>
+      <div class="cks" style="margin:8px 0 2px">
+        <label><input type="checkbox" id="roadwin" checked> <b>도로 우선</b> — 도로와 겹치는 구간은 장애물로 안 셈</label>
+      </div>
+      <div class="row"><label>도로 우선 여유 m</label><input type="range" id="rwt" min="0" max="40" step="1" value="0"><span class="val" id="rwtv">0</span></div>
+      <div class="note" id="rwnote"></div>
+      <div class="row"><label>Road Tol m</label><input type="range" id="rt" min="0" max="60" step="1" value="15"><span class="val" id="rtv">15</span></div>
+      <div class="row"><label>Obstacle Tol m</label><input type="range" id="ot" min="0" max="60" step="1" value="0"><span class="val" id="otv">0</span></div>
+      <div class="row"><label>Road Reward</label><input type="range" id="rw" min="0" max="5" step="0.5" value="1"><span class="val" id="rwv">1</span></div>
+      <div class="row"><label>Obstacle Penalty</label><input type="range" id="ow" min="0" max="30" step="1" value="10"><span class="val" id="owv">10</span></div>
+    </div>
+
+    <div class="sec">
+      <h2>최적화 (GA)</h2>
+      <div class="row"><label>Population</label><input type="number" id="pop" value="40" min="8" max="400" style="width:70px"></div>
+      <div class="row"><label>Generation</label><input type="number" id="gens" value="60" min="1" max="2000" style="width:70px"></div>
+      <div class="row"><label>Seed</label><input type="number" id="seed" value="12345" style="width:90px"></div>
+      <div class="row"><label>토공 벌점 점/백만m³</label><input type="number" id="ewp" value="6" min="0" max="60" step="0.5" style="width:70px"></div>
+      <div class="row"><label>대지 이탈 벌점 점/km</label><input type="number" id="owp" value="20" min="0" max="200" step="1" style="width:70px"></div>
+      <div class="note">0 이면 v7 총점 그대로 고른다. 올리면 토공이 큰 대안이 밀린다.<br>★이탈 벌점이 없으면 GA 가 선형을 대지 밖으로 빼 토공을 회피한다(실측 확인).<br><span class="dim">총점(v7 계보)은 그대로 두고 «고르는 기준»만 바꾼다. 종단경사·종단곡선 위반은 실격.</span></div>
+      <div class="row" style="gap:6px">
+        <button id="run">최적화 실행</button>
+        <button id="stop" class="sec2" disabled>중지</button>
+        <button id="reset" class="sec2">초기화</button>
+      </div>
+      <canvas class="mini" id="conv"></canvas>
+      <div class="note" id="perf">—</div>
+    </div>
+
+    <div class="sec">
+      <h2>GD OUT (7종) — v7 사양 그대로</h2>
+      <div class="big" id="score">—</div>
+      <table class="m">
+        <tr><td>Total Length m</td><td id="oTL">—</td></tr>
+        <tr><td>Road Overlap m</td><td id="oRO">—</td></tr>
+        <tr><td>Obstacle Overlap m</td><td id="oOO">—</td></tr>
+        <tr><td>Length 0-100</td><td id="oLS">—</td></tr>
+        <tr><td>Road 0-100</td><td id="oRS">—</td></tr>
+        <tr><td>Obstacle Penalty 0-100</td><td id="oOP">—</td></tr>
+        <tr><td class="dim">baseline m</td><td id="oBL" class="dim">—</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <h2>대안 <span class="chip" id="candN">0</span></h2>
+      <div class="row">
+        <label>정렬</label>
+        <select id="csort">
+          <option value="score">점수 높은순</option>
+          <option value="obs">장애물 적은순</option>
+          <option value="len">연장 짧은순</option>
+          <option value="road">도로추종 높은순</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>필터</label>
+        <select id="cfilter">
+          <option value="clean">장애물 0 만</option>
+          <option value="ok">양호만(기하위반 0)</option>
+          <option value="all">전체</option>
+        </select>
+      </div>
+      <div class="cks"><label><input type="checkbox" id="ghost" checked> 대안 전체 겹쳐보기</label></div>
+      <div class="sumline" id="candSum"></div>
+      <div class="clist" id="candList"></div>
+      <div class="note">행을 클릭하면 그 대안이 화면·GD OUT에 반영된다. 목록 값은 <b>현재 파라미터로 재채점</b>되므로, 가중치를 바꾸면 순위가 바뀐다.</div>
+    </div>
+
+    <div class="sec">
+      <h2>사양일치 검사</h2>
+      <div id="vfy" class="note">—</div>
+    </div>
+
+    <div class="sec">
+      <h2>파레토 (장애물↓ vs 총연장↓)</h2>
+      <canvas class="mini" id="pareto" style="height:110px"></canvas>
+      <div class="note" id="frontN">—</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/geom.js"></script>
+<script src="js/design.js"></script>
+<!-- 데이터는 <script> 로 싣는다 — file:// 에서 fetch 가 막히므로 서버가 필요 없어진다 -->
+<script src="../data/site.js?v=1.7"></script>
+<script src="../data/terrain.js?v=1.7"></script>
+<script src="../data/_aux.js?v=1.7"></script>
+<script src="js/terrain.js?v=1.7"></script>
+<script src="js/terrain_gen.js?v=1.5"></script>
+<script src="js/profile.js?v=1.4"></script>
+<script src="js/section.js?v=1.6"></script>
+<script src="js/alignment.js"></script>
+<script src="js/score.js"></script>
+<script src="js/ga.js"></script>
+<script src="js/verify.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
