@@ -18,12 +18,12 @@
  ],
  "files": {
   "AI_GUIDE.md": {
-   "bytes": 10340,
-   "sha256": "d8c58e67338379eafa69f021988546763b661092dc57d2869f8683f57bc0b262"
+   "bytes": 11338,
+   "sha256": "fb65149ae8fc32c074b6590fa502986a8f1179b4736088bed920d0417a3fabdf"
   },
   "CHANGELOG.md": {
-   "bytes": 1310,
-   "sha256": "b31e6cc94c77b643a1de6807111e4b3e1ed6cb87fd3f17060518afb16e406501"
+   "bytes": 1889,
+   "sha256": "2d3ce09f99751a6185ae905b71e88b21f0e21a4eeeedce877720c76734960cba"
   },
   "README.md": {
    "bytes": 2916,
@@ -42,8 +42,8 @@
    "sha256": "e4817abfdca7b0d369a5486f79223b521222e569c14a542167e7a4ee6c46ec50"
   },
   "USAGE.md": {
-   "bytes": 11980,
-   "sha256": "35db6fc0201ef2651333dc32c13b964c46ae81bce5898a645ed8b0a878caf97c"
+   "bytes": 12635,
+   "sha256": "3a184ecda1fe8acc04a0146c9d666ef23c6f1c962bd530828c4e0d209626205a"
   },
   "data/_aux.js": {
    "bytes": 7276,
@@ -110,8 +110,8 @@
    "sha256": "3077a4209cc67a8b60ff784ce9d4eaeb92cc05d95169e52174c9e155d8744829"
   },
   "docs/설명자료.html": {
-   "bytes": 36735,
-   "sha256": "e43c42fc87d454eb63cd7f4b285b26f03778ba99ef272df0bab48e5d5ba8f9a3"
+   "bytes": 39678,
+   "sha256": "76690c14c0ef2e75f11cf8c6fc7c310a96f0c91e17ce737342e5f48911adac59"
   },
   "serve.py": {
    "bytes": 4350,
@@ -158,16 +158,16 @@
    "sha256": "4780182d3633bf9eefced1ef7e31212a120f5746782cee9cdffcec690bd76bf9"
   },
   "web/js/app.js": {
-   "bytes": 78864,
-   "sha256": "ba19fa3800396e652eb0587e0664456506e89d4c3e07bdbf2558bbc0f5dfd255"
+   "bytes": 80926,
+   "sha256": "60037bb820274ccb83cb0178e138aa176d39348d51bbac263cadc8f2230ba994"
   },
   "web/js/design.js": {
    "bytes": 8795,
    "sha256": "9e8f7483806fad5f4060fe48d153bdca84f9052d91f463ff784da9b1bb36603b"
   },
   "web/js/ga.js": {
-   "bytes": 6848,
-   "sha256": "1068e38afdbd934ddc87649f81ec6f54f404a2073ec2d2ec00c67a097a7321b4"
+   "bytes": 8163,
+   "sha256": "b5e8deddc5a5f97a45ccdb05b5400e1569792d8ce5ebdf8c5aedc7e12571ee0d"
   },
   "web/js/geom.js": {
    "bytes": 4015,

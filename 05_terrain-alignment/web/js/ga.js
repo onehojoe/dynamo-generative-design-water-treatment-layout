@@ -75,7 +75,14 @@
 
   /* ctx: {site, params, obsGrid, roadGrid}
      onProgress(payload) — 세대 보고. shouldStop() — 중단 질의. */
-  function run(cfg, ctx, onProgress, shouldStop) {
+  /* run(cfg, ctx, onProgress, shouldStop [, done])
+   *   done 없음 → 동기 실행 후 결과를 반환한다 (워커에서 쓰는 경로. 기존 그대로)
+   *   done 있음 → 세대를 잘라 setTimeout 으로 양보하며 돌고 done(결과) 로 알린다
+   *
+   * ★왜 비동기 경로가 필요한가: 배포본은 file:// 에서 열린다. 그런데 브라우저는
+   *   file:// 문서에서 Web Worker 생성을 막는다(SecurityError, origin 'null').
+   *   그래서 워커를 못 쓰는 환경에서는 메인스레드로 돌리되 UI 가 얼지 않게 쪼갠다. */
+  function run(cfg, ctx, onProgress, shouldStop, done) {
     EW = +(cfg.earthPenalty || 0);   // 토공 벌점 (점/백만 m³)
     OW = +(cfg.outsidePenalty || 0); // 대지 이탈 벌점 (점/km)
     const rnd = mulberry32(cfg.seed >>> 0);
@@ -113,8 +120,7 @@
       return fit(a) >= fit(b) ? a : b;
     };
 
-    for (let gen = 1; gen <= G; gen++) {
-      if (shouldStop && shouldStop()) break;
+    function oneGeneration(gen) {
       pop.sort((a, b) => fit(b) - fit(a));
       const next = pop.slice(0, cfg.elite);
       while (next.length < P) {
@@ -146,13 +152,39 @@
         });
       }
     }
-    const ms = Date.now() - t0;
-    return {
-      type: 'done', evals: evals, ms: ms, gens: G,
-      evalsPerSec: evals / Math.max(0.001, ms / 1000),
-      best: { gen: best.gen, m: best.m }, history: history,
-      front: front.map(f => ({ m: f.m, gen: f.gen }))
-    };
+
+    function finish() {
+      const ms = Date.now() - t0;
+      return {
+        type: 'done', evals: evals, ms: ms, gens: G,
+        evalsPerSec: evals / Math.max(0.001, ms / 1000),
+        best: { gen: best.gen, m: best.m }, history: history,
+        front: front.map(f => ({ m: f.m, gen: f.gen }))
+      };
+    }
+
+    const stopped = () => !!(shouldStop && shouldStop());
+
+    if (!done) {                                   // 동기 — 워커 경로
+      for (let gen = 1; gen <= G; gen++) {
+        if (stopped()) break;
+        oneGeneration(gen);
+      }
+      return finish();
+    }
+
+    // 비동기 — 60 ms 씩 돌고 화면에 양보한다(진행 그래프·중지 버튼이 살아 있게)
+    let gen = 1;
+    (function tick() {
+      const slice = Date.now();
+      while (gen <= G && !stopped() && Date.now() - slice < 60) {
+        oneGeneration(gen);
+        gen++;
+      }
+      if (gen > G || stopped()) { done(finish()); return; }
+      setTimeout(tick, 0);
+    })();
+    return null;
   }
 
   global.KHGA = { run, decode, mulberry32 };

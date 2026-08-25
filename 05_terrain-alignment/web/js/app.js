@@ -8,7 +8,8 @@
   const convCv = $('conv'), parCv = $('pareto');
 
   let SITE = null, CTXE = null, PATHS = {}, worker = null;
-  let TPATH = null, PROF = null, TERRAIN_RAW = null, BASE_PARAMS = null, BASE_TERRAIN = null;                 // 지형 Path2D · 현재 종단 계산 결과
+  let TPATH = null, PROF = null, TERRAIN_RAW = null, BASE_PARAMS = null, BASE_TERRAIN = null;
+  let workerBlocked = null;                     // 워커가 막힌 이유(있으면 메인스레드로)                 // 지형 Path2D · 현재 종단 계산 결과
   let view = { cx: 0, cy: 0, k: 0.05 };
   let best = null, history = [], front = [], lastSamples = [];
   let frontGenomes = [];   // 파레토 해의 유전자 (파라미터 바뀌면 재채점 대상)
@@ -1268,21 +1269,59 @@
     }
   }
 
-  /* 워커 경로 — 평소 UI용. 계산 중에도 화면이 안 멈춘다. */
-  function startGA() {
-    if (!worker) {
-      worker = new Worker('js/worker.js');
-      worker.onmessage = (e) => {
+  /* 최적화 실행.
+   *
+   * ★2026-08-25 결함 교정 — file:// 로 열면 브라우저가 Web Worker 생성을 막는다
+   *   (SecurityError: cannot be accessed from origin 'null'). 배포본은 서버 없이
+   *   file:// 로 여는 것이 기본이라, 예전 코드는 [최적화 실행] 을 눌러도 예외로 죽어
+   *   «아무 일도 안 일어나는» 상태가 됐다.
+   *   → 워커를 try 로 만들어 보고, 못 만들면 메인스레드 비동기 경로로 물러난다.
+   *     (세대마다 화면에 양보하므로 진행 그래프·중지 버튼이 그대로 산다) */
+  let stopFlag = false;
+
+  function makeWorker() {
+    if (worker) return worker;
+    try {
+      const w = new Worker('js/worker.js');
+      w.onmessage = (e) => {
         const d = e.data;
         if (d.type === 'progress' || d.type === 'done') applyResult(d);
       };
+      w.onerror = () => { /* 로드 실패 — 다음 실행부터 메인스레드로 */ worker = null; };
+      worker = w;
+      return worker;
+    } catch (err) {
+      workerBlocked = err && err.name ? err.name : 'Error';
+      return null;
     }
-    worker.postMessage({ type: 'init', site: SITE, params: params(),
-      terrain: TERRAIN_RAW, pparams: pparams(),
-      useGenomeProfile: $('gdProf').checked });
-    worker.postMessage({ type: 'run', cfg: gaCfg() });
+  }
+
+  function startGA() {
+    stopFlag = false;
     $('run').disabled = true; $('stop').disabled = false;
     window.__KH_DONE = false;
+
+    const w = makeWorker();
+    if (w) {
+      $('perf').textContent = '워커에서 계산 중…';
+      document.body.dataset.gapath = 'worker';
+      w.postMessage({ type: 'init', site: SITE, params: params(),
+        terrain: TERRAIN_RAW, pparams: pparams(),
+        useGenomeProfile: $('gdProf').checked });
+      w.postMessage({ type: 'run', cfg: gaCfg() });
+      return;
+    }
+
+    // 워커 불가 — 메인스레드에서 세대를 쪼개 돈다
+    $('perf').innerHTML = '<span class="warn">메인스레드 계산</span> — 이 브라우저는 ' +
+      'file:// 에서 워커를 막는다(' + (workerBlocked || 'SecurityError') + '). ' +
+      '서버로 열면 워커를 쓴다.';
+    document.body.dataset.gapath = 'main:' + (workerBlocked || '?');
+    rebuildCtx();
+    KHGA.run(gaCfg(), CTXE,
+      (p) => applyResult(p),
+      () => stopFlag,
+      (res) => applyResult(res));
   }
 
   /* 동기 경로 — 헤드리스 캡처용.
@@ -1377,7 +1416,10 @@
     renderCandidates();
 
     $('run').addEventListener('click', startGA);
-    $('stop').addEventListener('click', () => { if (worker) worker.postMessage({ type: 'stop' }); });
+    $('stop').addEventListener('click', () => {
+      stopFlag = true;                          // 메인스레드 경로
+      if (worker) worker.postMessage({ type: 'stop' });
+    });
     $('reset').addEventListener('click', () => {
       genome = { activePI: 5, u: [0.06, .5, .5, .5, .5, .5, .5, .5, .5, .5],
         v: new Array(10).fill(0.5), prof: PROF0() };
@@ -1565,6 +1607,9 @@
 
     // 헤드리스(=sync)면 메인스레드 동기 실행, 아니면 워커
     if (q.get('auto')) setTimeout(q.get('sync') ? startGASync : startGA, 120);
+    // ★click=1 — 사람이 누르는 것과 같은 경로로 [최적화 실행] 을 눌러 본다.
+    //   예전 검증이 sync=1 로만 돌아 워커 차단을 못 잡았다. 그 재발을 막는 훅이다.
+    if (q.get('click')) setTimeout(() => $('run').click(), 200);
     if (q.get('ptest')) setTimeout(runPointTest, 300);
   }
 

@@ -67,17 +67,19 @@ strong{color:#1F1B16}
 <a class="h3" href="#AI_GUIDE-6">① 목적함수를 회피하는 값싼 길</a>
 <a class="h3" href="#AI_GUIDE-7">② 유전자의 기준선을 잘못 잡음</a>
 <a class="h3" href="#AI_GUIDE-8">③ 인코딩 계층</a>
-<a class="h3" href="#AI_GUIDE-9">④ 스타일만 바꿔도 로직이 깨진다</a>
-<a class="h2" href="#AI_GUIDE-10">5. 유전자 배치 (46차원)</a>
-<a class="h2" href="#AI_GUIDE-11">6. 자주 오는 요청과 손댈 곳</a>
-<a class="h2" href="#AI_GUIDE-12">7. 검증 방법</a>
-<a class="h2" href="#AI_GUIDE-13">8. 사용자에게 말할 때 꼭 붙일 것</a>
+<a class="h3" href="#AI_GUIDE-9">④ file:// 에서는 Web Worker 가 막힌다</a>
+<a class="h3" href="#AI_GUIDE-10">⑤ 스타일만 바꿔도 로직이 깨진다</a>
+<a class="h2" href="#AI_GUIDE-11">5. 유전자 배치 (46차원)</a>
+<a class="h2" href="#AI_GUIDE-12">6. 자주 오는 요청과 손댈 곳</a>
+<a class="h2" href="#AI_GUIDE-13">7. 검증 방법</a>
+<a class="h2" href="#AI_GUIDE-14">8. 사용자에게 말할 때 꼭 붙일 것</a>
 <a class="h1" href="#CHANGELOG-0">변경 이력</a>
-<a class="h2" href="#CHANGELOG-1">v1.7 (2026-08-25) — 배포판</a>
-<a class="h2" href="#CHANGELOG-2">v1.6 (2026-08-25)</a>
-<a class="h2" href="#CHANGELOG-3">v1.5 (2026-08-25)</a>
-<a class="h2" href="#CHANGELOG-4">v1.4 (2026-08-25)</a>
-<a class="h2" href="#CHANGELOG-5">v1.3 이전</a></nav><main><div class="warnbox"><b>먼저 알아 둘 것</b><br>
+<a class="h2" href="#CHANGELOG-1">v1.7.1 (2026-08-25) — 버그 수정</a>
+<a class="h2" href="#CHANGELOG-2">v1.7 (2026-08-25) — 배포판</a>
+<a class="h2" href="#CHANGELOG-3">v1.6 (2026-08-25)</a>
+<a class="h2" href="#CHANGELOG-4">v1.5 (2026-08-25)</a>
+<a class="h2" href="#CHANGELOG-5">v1.4 (2026-08-25)</a>
+<a class="h2" href="#CHANGELOG-6">v1.3 이전</a></nav><main><div class="warnbox"><b>먼저 알아 둘 것</b><br>
 지형은 전량 <b>합성</b>이다(원본에 표고 없음) · 설계기준 수치 <b>12개 중 11개가 법령 원문 대조 전</b> ·
 터널·교량은 <b>높이 임계값 판정</b>(경제성 비교 아님) · 대지는 데이터 범위 + 여유 150 m <b>사각형</b>.
 그대로 설계 근거로 옮기지 말 것.</div><section id="USAGE.md"><h1 id="USAGE-0">지형·선형 GD 워크벤치 — 사용 설명서</h1>
@@ -163,6 +165,9 @@ strong{color:#1F1B16}
 </ul>
 <p>  GD 가 대지 밖으로 빠져 토공 계산을 피해 간다(실제로 겪은 일이다).</p>
 <p><figure><img src="img/09_gallery.png" alt="최적화 후 — 왼쪽 갤러리에서 대안을 고르면 평면·종단·횡단이 함께 바뀐다"><figcaption>최적화 후 — 왼쪽 갤러리에서 대안을 고르면 평면·종단·횡단이 함께 바뀐다</figcaption></figure></p>
+<p>진행 중에는 아래 <code>[중지]</code> 로 언제든 멈출 수 있고, 그때까지 찾은 최선이 남는다.</p>
+<blockquote><strong>계산이 어디서 도는가</strong> — 서버로 열면 별도 스레드(Web Worker)에서, <code>file://</code> 로 열면 메인스레드에서 돈다.</blockquote>
+<blockquote>브라우저가 <code>file://</code> 문서의 워커 생성을 막기 때문이다. 결과는 같고 속도만 다르다.</blockquote>
 <p>끝나면 <code>[대안 갤러리]</code> 에서 후보를 눈으로 고른다. 카드를 누르면 평면·종단·횡단이 그 대안으로 바뀐다.</p>
 <hr>
 <h2 id="USAGE-7">4. 숫자를 어떻게 읽나</h2>
@@ -220,6 +225,7 @@ python tools/pack_data.py
 <tr><td>옛날 화면이 나온다</td><td><strong>Ctrl+F5</strong></td></tr>
 <tr><td>지형 재생성이 느리다</td><td>정상. 격자 12만 칸을 다시 계산한다(수백 ms~수 초)</td></tr>
 <tr><td>최적화가 멈춘 것 같다</td><td>Population×Generation 만큼 평가한다. 먼저 Pop 20 / Gen 15 로 감을 잡을 것</td></tr>
+<tr><td>최적화 중 화면이 살짝 끊긴다</td><td>정상. <code>file://</code> 로 열면 브라우저가 백그라운드 계산(Web Worker)을 막아 <strong>메인스레드</strong>로 돈다. 세대마다 화면에 양보하지만 완전히 매끄럽지는 않다. <code>serve.py</code> 로 열면 워커를 쓴다</td></tr>
 <tr><td>종단이 이상하다</td><td><code>측점 간격</code> 을 줄이면(예: 10 m) 지형을 더 촘촘히 따라간다</td></tr>
 <tr><td>대안이 다 실격이다</td><td><code>최대 종단경사</code> 가 너무 빡빡하거나 지형 기복이 너무 크다. 산 높이 배율을 낮춰 볼 것</td></tr>
 </tbody></table>
@@ -349,12 +355,22 @@ KHTerrain              KHAlign                  KHProfile           KHSection
 <li>PS 5.1 이 BOM 없는 UTF-8 파일을 ANSI 로 읽어 한글이 깨졌다 → <code>-Encoding UTF8</code> 명시.</li>
 <li>그걸 고치려고 넣은 <strong>한글 주석이 <code>.ps1</code> 자체를 깨뜨려</strong> 빈 파일이 나왔다 → 스크립트는 ASCII.</li>
 </ul>
-<h3 id="AI_GUIDE-9">④ 스타일만 바꿔도 로직이 깨진다</h3>
+<h3 id="AI_GUIDE-9">④ file:// 에서는 Web Worker 가 막힌다</h3>
+<p>배포본은 서버 없이 <code>file://</code> 로 여는 것이 기본인데, 브라우저는 <code>file://</code> 문서에서</p>
+<p><code>new Worker()</code> 를 <code>SecurityError: cannot be accessed from origin &#x27;null&#x27;</code> 로 거부한다.</p>
+<p>GA 를 워커에서만 돌리게 짜 두었더니 <strong>[최적화 실행] 을 눌러도 아무 일도 안 일어났다.</strong></p>
+<p>→ 워커 생성을 <code>try</code> 로 감싸고, 실패하면 메인스레드에서 세대를 60 ms 씩 쪼개 돈다</p>
+<p>  (<code>ga.js run()</code> 의 5번째 인자 <code>done</code> 이 있으면 비동기 경로).</p>
+<p><strong>★더 뼈아픈 건 «검증이 못 잡았다»는 것이다.</strong> 헤드리스 확인을 늘 <code>?auto=1&amp;sync=1</code></p>
+<p>(메인스레드 강제)로 했기 때문에 워커 경로를 한 번도 지나지 않았다.</p>
+<p>→ <code>?click=1</code> 훅을 넣었다. <strong>사람이 누르는 것과 같은 경로</strong>로 버튼을 누른다.</p>
+<p>   화면 기능을 고쳤으면 우회 경로가 아니라 그 버튼을 눌러 볼 것.</p>
+<h3 id="AI_GUIDE-10">⑤ 스타일만 바꿔도 로직이 깨진다</h3>
 <p>다크→라이트 전환에서 갤러리 썸네일이 자체 색을 들고 있어 혼자 검게 남았고,</p>
 <p>종단 헤더의 컨트롤이 화면 밖으로 밀려 사라졌다.</p>
 <p><strong>교훈: 색을 바꿨으면 반드시 렌더해서 눈으로 볼 것.</strong> 코드만 보면 못 잡는다.</p>
 <hr>
-<h2 id="AI_GUIDE-10">5. 유전자 배치 (46차원)</h2>
+<h2 id="AI_GUIDE-11">5. 유전자 배치 (46차원)</h2>
 <pre><code>
 g[0]        activePI      PI 개수 (piMin~piMax)
 g[1..10]    u[10]         PI 의 종단 위치 (구간 내 0~1)
@@ -368,7 +384,7 @@ g[34..45]   lvc[12]       종단곡선 길이 배율 (0..1 → 최소K의 1~3배
 <p><strong>파레토 축</strong> 장애물겹침↓ · 총연장↓ · 도로점수↑ · 토공총량↓</p>
 <p><strong>실격</strong> 종단경사·종단곡선 위반 → <code>m.score = 0</code>, 파레토 제외</p>
 <hr>
-<h2 id="AI_GUIDE-11">6. 자주 오는 요청과 손댈 곳</h2>
+<h2 id="AI_GUIDE-12">6. 자주 오는 요청과 손댈 곳</h2>
 <table><thead><tr><th>요청</th><th>어디를</th></tr></thead><tbody>
 <tr><td>목적 하나 더 (예: 곡선반경 최소화)</td><td><code>score.js evaluate</code> 에서 지표 계산 → <code>ga.js axes()</code>·<code>fit()</code></td></tr>
 <tr><td>새 제약 (예: 하천 이격)</td><td><code>profile.js reviewProfile</code> 에 항목 추가 → 실격 처리는 <code>score.js</code></td></tr>
@@ -379,21 +395,21 @@ g[34..45]   lvc[12]       종단곡선 길이 배율 (0..1 → 최소K의 1~3배
 <tr><td>배포본 다시 굽기</td><td><code>tools/pack_data.py</code> → <code>TEST.bat</code> 로 확인</td></tr>
 </tbody></table>
 <hr>
-<h2 id="AI_GUIDE-12">7. 검증 방법</h2>
+<h2 id="AI_GUIDE-13">7. 검증 방법</h2>
 <ul>
 <li><strong><code>TEST.bat</code></strong> — 파일 존재·SHA-256·데이터 스키마·격자 정합·등고선·.bat 인코딩·스크립트 참조·기준 등록부</li>
 <li><strong>헤드리스 확인</strong> — <code>?auto=1&amp;sync=1&amp;pop=24&amp;gens=20</code> 으로 GA 를 메인스레드에서 돌린다.</li>
 </ul>
 <p>  (Chrome <code>--virtual-time-budget</code> 은 워커 태스크를 진행시키지 않아 <code>sync=1</code> 이 필요하다)</p>
 <ul>
-<li><strong>URL 파라미터</strong> — <code>ewp</code>(토공벌점) <code>owp</code>(이탈벌점) <code>gdprof</code>(종단GD 0/1) <code>tsd</code>(지형시드)</li>
+<li><strong>URL 파라미터</strong> — <code>click=1</code>(실제 버튼 클릭) <code>ewp</code>(토공벌점) <code>owp</code>(이탈벌점) <code>gdprof</code>(종단GD 0/1) <code>tsd</code>(지형시드)</li>
 </ul>
 <p>  <code>tnp</code>(산 개수) <code>tph</code>(산 높이배율) <code>trd</code>(하천 깊이) <code>tgen=1</code>(로드 후 지형 재생성) <code>gallery=1</code></p>
 <ul>
 <li><strong>A/B 는 반드시 수치로</strong> — «좋아졌다» 는 주장은 두 설정의 실측값을 나란히 놓고 말할 것.</li>
 </ul>
 <hr>
-<h2 id="AI_GUIDE-13">8. 사용자에게 말할 때 꼭 붙일 것</h2>
+<h2 id="AI_GUIDE-14">8. 사용자에게 말할 때 꼭 붙일 것</h2>
 <p>이 도구의 수치는 아직 다음 상태다. 보고서·설계 근거로 옮길 때 <strong>반드시</strong> 함께 전달한다.</p>
 <ol>
 <li>지형은 <strong>전량 합성</strong>이다(원본에 Z 없음). 실지형과 무관하다.</li>
@@ -404,7 +420,17 @@ g[34..45]   lvc[12]       종단곡선 길이 배율 (0..1 → 최소K의 1~3배
 <li>Dynamo 원본 그래프와의 <strong>실행값 대조는 하지 않았다</strong>(사양 이식까지만 확인).</li>
 </ol></section>
 <section id="CHANGELOG.md"><h1 id="CHANGELOG-0">변경 이력</h1>
-<h2 id="CHANGELOG-1">v1.7 (2026-08-25) — 배포판</h2>
+<h2 id="CHANGELOG-1">v1.7.1 (2026-08-25) — 버그 수정</h2>
+<ul>
+<li><strong>[최적화 실행] 이 <code>file://</code> 에서 동작하지 않던 것 수정.</strong> 브라우저가 <code>file://</code> 문서의</li>
+</ul>
+<p>  Web Worker 생성을 막아(SecurityError) 버튼이 예외로 죽었다. 워커를 못 만들면</p>
+<p>  메인스레드에서 세대를 쪼개 도는 경로로 물러난다 — 진행 그래프·[중지] 모두 그대로 동작.</p>
+<ul>
+<li>회귀 방지: <code>?click=1</code> 로 <strong>실제 버튼을 눌러</strong> 확인하는 헤드리스 훅 추가.</li>
+</ul>
+<p>  기존 검증이 <code>?sync=1</code>(메인스레드 강제)로만 돌아 이 결함을 놓쳤다.</p>
+<h2 id="CHANGELOG-2">v1.7 (2026-08-25) — 배포판</h2>
 <ul>
 <li><strong>의존성 0 실행</strong> — 데이터를 <code>data/*.js</code> 로 구워 <code>file://</code> 에서 바로 열린다. 서버·파이썬 불필요</li>
 <li><code>RUN.bat</code> / <code>TEST.bat</code> (순수 ASCII·CRLF) · <code>tools/selfcheck.py</code> 8종 검사</li>
@@ -412,24 +438,24 @@ g[34..45]   lvc[12]       종단곡선 길이 배율 (0..1 → 최소K의 1~3배
 <li>스타일: 다크 대시보드 → <strong>측량 제도지</strong>(크림 종이·세피아 잉크)</li>
 <li>Revit 애드인 제거(소스는 별도 보관)</li>
 </ul>
-<h2 id="CHANGELOG-2">v1.6 (2026-08-25)</h2>
+<h2 id="CHANGELOG-3">v1.6 (2026-08-25)</h2>
 <ul>
 <li>종단을 유전자에 편입(21 → 46차원). 기준선 = 자동산정선 대비 편차</li>
 <li>횡단면 스윕 <code>section.js</code> — 실제 지반 횡단형상으로 토공 산정</li>
 <li>설계기준 등록부 <code>standards_registry.json</code> (12항목, 검증 상태 표시)</li>
 <li>외부 지형 리더 <code>import_terrain.py</code> (ASC/XYZ/LandXML/DXF)</li>
 </ul>
-<h2 id="CHANGELOG-3">v1.5 (2026-08-25)</h2>
+<h2 id="CHANGELOG-4">v1.5 (2026-08-25)</h2>
 <ul>
 <li>지형 변수 UI + 브라우저 지형 생성(marching squares 등고선)</li>
 <li>터널·교량 판정, 토공에서 제외. 연장 회계 분리(지형없음 / 구조물)</li>
 </ul>
-<h2 id="CHANGELOG-4">v1.4 (2026-08-25)</h2>
+<h2 id="CHANGELOG-5">v1.4 (2026-08-25)</h2>
 <ul>
 <li>지형(등고선) 도입, 종단면 패널, 토공, 종단경사·종단곡선 검토</li>
 <li>대지 경계 bbox 전환, 대지 이탈 벌점</li>
 </ul>
-<h2 id="CHANGELOG-5">v1.3 이전</h2>
+<h2 id="CHANGELOG-6">v1.3 이전</h2>
 <ul>
 <li>도로 평면선형 GD 워크벤치(평면 전용)에서 갈라져 나옴</li>
 </ul></section></main></div></html>
