@@ -40,7 +40,7 @@
 
 ## `04_engine/export.py`
 
-DXF / JSON 계약 / CSV · 190줄
+DXF / JSON 계약 / CSV · 248줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|
@@ -50,14 +50,23 @@ DXF / JSON 계약 / CSV · 190줄
 | 36 | `_arcs_of` | 오프셋 t 인 링을 구성하는 원호 목록. 중심은 그대로, 반지름 +t. |
 | 59 | `_bottom_hit` |  |
 | 73 | `have_ezdxf` | ezdxf 는 DXF 내보내기에만 쓴다. 없어도 뷰어·JSON·CSV·보고서는 전부 돈다. |
-| 82 | `to_dxf` |  |
-| 128 | `to_json` | BIM 핸드오프 계약. Dynamo/애드인은 이 파일만 읽으면 단면을 재구성한다. |
-| 176 | `CSV_COLS` |  |
-| 180 | `to_csv` |  |
+| 87 | `_g` |  |
+| 91 | `_num` |  |
+| 95 | `_e_line` |  |
+| 100 | `_e_arc` |  |
+| 105 | `_e_circle` |  |
+| 110 | `_e_poly` |  |
+| 119 | `_e_point` |  |
+| 123 | `_e_text` |  |
+| 128 | `to_dxf` | R12 ASCII DXF 를 직접 쓴다. 외부 라이브러리 없음. |
+| 177 | `have_ezdxf` | 더 이상 필수가 아니다. 게이트에서 되읽기 검증에만 쓴다. |
+| 186 | `to_json` | BIM 핸드오프 계약. Dynamo/애드인은 이 파일만 읽으면 단면을 재구성한다. |
+| 234 | `CSV_COLS` |  |
+| 238 | `to_csv` |  |
 
 ## `04_engine/gate_check.py`
 
-게이트 9종 · 219줄
+게이트 9종 · 224줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|
@@ -71,7 +80,7 @@ DXF / JSON 계약 / CSV · 190줄
 
 ## `05_web_viewer/server.py`
 
-HTTP API · 정적 서빙 · 포트 자동선택 · 262줄
+HTTP API · 정적 서빙 · 포트 자동선택 · 258줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|
@@ -90,7 +99,7 @@ HTTP API · 정적 서빙 · 포트 자동선택 · 262줄
 
 ## `90_dist/build_dist.py`
 
-배포 빌드 (+ RUN/CHECK.bat 생성) · 193줄
+배포 빌드 (+ RUN/CHECK.bat 생성) · 247줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|
@@ -100,15 +109,17 @@ HTTP API · 정적 서빙 · 포트 자동선택 · 262줄
 | 24 | `STAMP` |  |
 | 25 | `NAME` |  |
 | 27 | `FILES` |  |
-| 44 | `EMPTY_DIRS` |  |
-| 46 | `README` |  |
-| 120 | `_force_rm` | Windows 는 ReadOnly 속성이 붙은 폴더/파일을 rmtree 로 못 지운다 — |
-| 131 | `rmtree_safe` |  |
-| 140 | `main` |  |
+| 51 | `EMPTY_DIRS` |  |
+| 53 | `README` |  |
+| 126 | `PY_LICENSE_NOTE` |  |
+| 133 | `BUNDLE_NOTE` |  |
+| 149 | `_force_rm` | Windows 는 ReadOnly 속성이 붙은 폴더/파일을 rmtree 로 못 지운다 — |
+| 160 | `rmtree_safe` |  |
+| 169 | `main` |  |
 
 ## `90_dist/diagnose.py`
 
-자가진단 · 118줄
+자가진단 · 123줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|
@@ -120,22 +131,38 @@ HTTP API · 정적 서빙 · 포트 자동선택 · 262줄
 
 ## `90_dist/make_figures.py`
 
-설명서 그림 생성 · 142줄
+설명서 그림 생성 · 386줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|
-| 13 | `HERE` |  |
-| 14 | `ROOT` |  |
-| 15 | `IMG` |  |
-| 17 | `FONT_CANDIDATES` |  |
-| 23 | `font` |  |
-| 33 | `badge` |  |
-| 42 | `box` |  |
-| 46 | `legend` | 이미지 아래에 범례 띠를 붙인다. |
-| 65 | `fig_main` |  |
-| 94 | `fig_section` |  |
-| 110 | `fig_grid` |  |
-| 122 | `main` |  |
+| 19 | `HERE` |  |
+| 20 | `ROOT` |  |
+| 21 | `IMG` |  |
+| 22 | `PORT` |  |
+| 24 | `FONT_CANDIDATES` |  |
+| 26 | `CHROME` |  |
+| 31 | `DIM` |  |
+| 34 | `font` |  |
+| 44 | `badge` |  |
+| 53 | `box` |  |
+| 57 | `legend` |  |
+| 77 | `side_by_side` |  |
+| 91 | `split_columns` | 세로로 긴 그림을 n 단으로 잘라 가로로 편다 — 폭 좁은 이미지는 문서에서 글씨가 안 보인다. |
+| 106 | `shot` |  |
+| 122 | `api` |  |
+| 132 | `fig1_screen` |  |
+| 155 | `fig2_section` |  |
+| 171 | `fig3_input` |  |
+| 188 | `fig4_pareto` |  |
+| 204 | `fig5_grid` |  |
+| 218 | `_crop_canvas` |  |
+| 222 | `fig6_extras` |  |
+| 233 | `fig7_layers` |  |
+| 243 | `fig8_legacy` |  |
+| 256 | `fig9_report` |  |
+| 268 | `LAYER_COLOR` |  |
+| 275 | `fig10_dxf` | 내보낸 DXF 를 ezdxf 로 되읽어 그린다 — 실제로 엔티티가 들어 있다는 증거. |
+| 333 | `main` |  |
 
 ## `90_dist/make_codemap.py`
 
@@ -152,7 +179,7 @@ HTTP API · 정적 서빙 · 포트 자동선택 · 262줄
 
 ## `05_web_viewer/app.js`
 
-화면·상호작용 (계산은 하지 않는다) · 437줄
+화면·상호작용 (계산은 하지 않는다) · 445줄
 
 | 줄 | 정의 | 한 줄 설명 |
 |---:|---|---|

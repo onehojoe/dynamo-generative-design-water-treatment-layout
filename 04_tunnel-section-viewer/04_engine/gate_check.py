@@ -163,11 +163,16 @@ def main():
     tmp = _os.path.join(tempfile.gettempdir(), "tn_gate.dxf")
     bad9 = []
     if not X.have_ezdxf():
+        X.to_dxf(sec, tmp)                       # 작성 자체는 의존성 없이 항상 된다
+        sz = _os.path.getsize(tmp) if _os.path.exists(tmp) else 0
+        if _os.path.exists(tmp):
+            _os.remove(tmp)
         d = X.to_json(sec, P, {"tol": 50})
         miss = [k for k in ("schema", "unit", "datum", "inner_arcs", "bottom", "rings",
                             "metrics", "notes") if k not in d]
-        rec("G9 내보내기 무결성", not miss,
-            "ezdxf 없음 → DXF 검사 건너뜀. JSON 계약 필드 %s" % ("정상" if not miss else "누락 " + ",".join(miss)))
+        rec("G9 내보내기 무결성", not miss and sz > 1000,
+            "ezdxf 없어 되읽기는 생략 · DXF 작성 %d bytes · JSON 계약 %s"
+            % (sz, "정상" if not miss else "누락 " + ",".join(miss)))
         f = sum(1 for _, ok, _ in RES if not ok)
         print(chr(10) + "=== 결과: PASS %d / FAIL %d  (스윕 %d조합 %s) ==="
               % (len(RES) - f, f, len(rows), shape))

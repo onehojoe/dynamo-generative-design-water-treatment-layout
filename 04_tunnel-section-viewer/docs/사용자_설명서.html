@@ -61,7 +61,9 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 <h2>2. 실행</h2>
 <ol class="steps">
   <li><b><code>RUN.bat</code> 더블클릭.</b> 브라우저가 자동으로 열립니다. 창을 닫으면 종료됩니다.</li>
-  <li>설치할 것은 없습니다. <b>파이썬 3.8 이상</b>만 있으면 됩니다. 없으면 RUN.bat 이 다운로드 주소를 알려 줍니다
+  <li><b>파이썬 동봉판</b>(폴더 안에 <code>runtime\</code> 이 있는 것)이면 <b>설치할 것이 전혀 없습니다.</b>
+      관리자 권한도 필요 없고, PC 에 이미 깔린 파이썬과 충돌하지도 않습니다.<br>
+      <b>경량판</b>이면 <b>파이썬 3.8 이상</b>이 필요합니다. 없으면 RUN.bat 이 다운로드 주소를 알려 줍니다
       (설치 시 <code>Add python.exe to PATH</code> 체크).</li>
   <li>8801 번 포트를 다른 프로그램이 쓰고 있으면 <b>8802, 8803… 으로 자동으로 옮겨</b> 뜹니다. 창에 실제 주소가 찍힙니다.</li>
 </ol>
@@ -184,8 +186,8 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 <tr><td>CSV</td><td>스윕 결과 전체(굴착단면적 포함). 엑셀에서 바로 열립니다</td><td><code>08_export/</code></td></tr>
 <tr><td>검토보고서</td><td>입력값 · 선정결과 · 단면도 · 대안비교 상위10 · <b>산정 근거와 한계</b>. HTML 이라 브라우저에서 인쇄하면 PDF 가 됩니다</td><td><code>07_report/</code></td></tr>
 </table>
-<div class="warn"><b>DXF 만 <code>ezdxf</code> 가 필요합니다.</b> 없으면 그 버튼만 막히고 뷰어·보고서·JSON·CSV 는 전부 정상입니다.
-필요하면 <code>pip install ezdxf</code>.</div>
+<div class="tip"><b>추가 설치가 필요한 기능은 없습니다.</b> DXF 도 외부 라이브러리 없이 직접 씁니다(R12 ASCII).
+파이썬 동봉판을 받으셨다면 <b>파이썬 설치도 필요 없습니다</b> — <code>RUN.bat</code> 이 폴더 안 <code>runtime\python.exe</code> 를 먼저 씁니다.</div>
 
 <figure><img src="img/fig8_검토보고서.png" alt="그림 8 — [검토보고서] 로 자동 생성된 문서. 원본 엑셀 서식을 따르되 #REF! 로 깨져 있던 6칸을 실값으로 채웁니다.">
 <figcaption>그림 8 — [검토보고서] 로 자동 생성된 문서. 원본 엑셀 서식을 따르되 #REF! 로 깨져 있던 6칸을 실값으로 채웁니다.</figcaption></figure>
@@ -231,7 +233,7 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 <tr><td>창이 떴다 바로 닫힌다</td><td><code>CHECK.bat</code> 실행 → <code>CHECK_RESULT.txt</code> 의 <code>[FAIL]</code> 줄 확인</td></tr>
 <tr><td>"Python 3 was not found"</td><td>파이썬 3.8+ 설치(설치 시 PATH 체크). 또는 <code>runtime\python.exe</code> 로 포터블 파이썬 배치</td></tr>
 <tr><td>브라우저가 안 열린다</td><td>검은 창에 찍힌 주소(<code>http://localhost:8801/</code> 등)를 직접 입력</td></tr>
-<tr><td>DXF 버튼만 오류</td><td><code>pip install ezdxf</code>. 다른 기능은 영향 없음</td></tr>
+<tr><td>"Python 3 was not found"</td><td><b>파이썬 동봉판</b>을 받아 쓰면 설치가 필요 없습니다. 회사 PC 정책상 실행파일 반입이 막히면 파이썬을 설치하고 경량판을 쓰면 됩니다(기능 동일)</td></tr>
 <tr><td>화면이 비어 있다</td><td>브라우저 강력 새로고침(<b>Ctrl+F5</b>). 인터넷 익스플로러는 지원하지 않음</td></tr>
 <tr><td>스윕이 오래 걸린다</td><td>스윕 범위의 조합 수를 줄입니다(간격을 키우면 조합이 급감)</td></tr>
 <tr><td>결과가 이상하다</td><td><code>python 04_engine/gate_check.py</code> 로 게이트 9종 전수 검사(스윕 900조합)</td></tr>

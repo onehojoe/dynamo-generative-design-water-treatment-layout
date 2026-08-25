@@ -144,10 +144,6 @@ class H(SimpleHTTPRequestHandler):
                         fn = "단면_%s.json" % stamp
                         XP.to_json(sec, P, q, os.path.join(EXPDIR, fn))
                     else:
-                        if not XP.have_ezdxf():
-                            msg = ("DXF 내보내기에는 ezdxf 가 필요하다. 설치: pip install ezdxf  "
-                                   "(설치 없이도 JSON·CSV·검토보고서는 모두 된다)")
-                            return self._json({"error": msg}, 400)
                         fn = "단면_%s.dxf" % stamp
                         XP.to_dxf(sec, os.path.join(EXPDIR, fn))
                 return self._json({"file": fn, "url": "/export/" + fn,
@@ -215,7 +211,8 @@ class H(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/defaults"):
             return self._json({"params": E.DEFAULT_PARAMS, "sweep": E.DEFAULT_SWEEP})
         if self.path.startswith("/api/env"):
-            return self._json({"python": sys.version.split()[0], "ezdxf": XP.have_ezdxf(),
+            return self._json({"python": sys.version.split()[0],
+                               "dxf": True, "ezdxf": XP.have_ezdxf(),
                                "legacy_rows": len(load_legacy().get("rows") or []),
                                "port": getattr(self.server, "server_port", None)})
         return super().do_GET()
@@ -242,9 +239,8 @@ if __name__ == "__main__":
     print(" NATM 내공단면 뷰어   http://localhost:%d/" % port)
     if port != want:
         print(" (%d 번이 사용 중이라 %d 번으로 옮겼다)" % (want, port))
-    print(" python %s / ezdxf %s / 원본참조 %d행"
-          % (sys.version.split()[0], "있음" if XP.have_ezdxf() else "없음(DXF만 비활성)",
-             len(load_legacy().get("rows") or [])))
+    print(" python %s / 원본참조 %d행 / 내보내기 DXF·JSON·CSV 모두 사용 가능"
+          % (sys.version.split()[0], len(load_legacy().get("rows") or [])))
     print(" 종료: 이 창에서 Ctrl+C  또는 창 닫기")
     print("=" * 64)
     url = "http://localhost:%d/" % port

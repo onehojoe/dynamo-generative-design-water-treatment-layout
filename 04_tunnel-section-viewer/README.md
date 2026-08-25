@@ -14,11 +14,18 @@ Revit·Dynamo 없이 돌아갑니다. 고른 안은 DXF·JSON·CSV·검토보고
 
 **`RUN.bat` 더블클릭.** 브라우저가 자동으로 열립니다. 창을 닫으면 종료됩니다.
 
-- 추가 설치 없음. **파이썬 3.8 이상**만 있으면 됩니다(없으면 RUN.bat 이 안내).
 - 8801 포트가 쓰이고 있으면 **8802, 8803… 으로 자동으로 옮겨** 뜹니다.
 - 안 되면 **`CHECK.bat`** → 화면과 `CHECK_RESULT.txt` 에 진단이 남습니다.
+- **추가 설치가 필요한 기능은 없습니다.** DXF 도 외부 라이브러리 없이 직접 씁니다.
 
-압축본이 필요하면 `TN_SECTION_VIEWER_v1.0_260825.zip` 을 그대로 전달하면 됩니다(내용 동일).
+### 배포본 두 가지 — 상황에 맞는 쪽을 전달하세요
+
+| ZIP | 크기 | 조건 |
+|---|---:|---|
+| `TN_SECTION_VIEWER_v1.1_260825_python동봉.zip` | 12.8 MB | **파이썬이 없어도 그대로 실행.** 설치·관리자권한 불필요, 시스템 파이썬과 충돌 없음. `runtime\` 안에 python.org 공식 embeddable 이 들어 있고 `RUN.bat` 이 이걸 먼저 씁니다 |
+| `TN_SECTION_VIEWER_v1.1_260825.zip` | 2.2 MB | 파이썬 3.8+ 가 이미 깔린 PC. 회사 정책상 실행파일 반입이 막힐 때도 이쪽 |
+
+기능은 **완전히 같습니다.** 이 폴더의 소스는 경량판과 동일하고, 동봉판은 여기에 `runtime\` 만 더한 것입니다.
 
 ---
 
@@ -36,7 +43,7 @@ Revit·Dynamo 없이 돌아갑니다. 고른 안은 DXF·JSON·CSV·검토보고
 ## 무엇이 들어 있나
 
 ```
-RUN.bat  CHECK.bat            실행 · 자가진단 (ASCII+CRLF, 파이썬 4단 탐색)
+RUN.bat  CHECK.bat            실행 · 자가진단 (ASCII+CRLF, 파이썬 4단 탐색: runtime\ → py -3 → python → 설치경로)
 04_engine/section_engine.py   기하·판정·스윕 — 계산은 여기 한 곳에만 있다
 04_engine/report.py           검토보고서 HTML
 04_engine/export.py           DXF / JSON 계약 / CSV
@@ -54,7 +61,7 @@ RUN.bat  CHECK.bat            실행 · 자가진단 (ASCII+CRLF, 파이썬 4단
   표의 행을 클릭하면 그 조건이 즉시 단면에 반영됩니다(역추적). 상위 12안은 형상 썸네일로 나란히 비교합니다.
 - **판정** — 편평률·시설한계 여유폭·포함 여부. **기준값은 화면에서 바꿀 수 있습니다**(하드코딩 아님).
 - **부대공** — 검사원통로·제트팬을 `표시` / `제약 반영` 으로 따로 켭니다.
-- **산출** — DXF(실제 ARC/LINE 엔티티·레이어 9종·mm) · JSON 계약 · CSV · 검토보고서(HTML→인쇄 시 PDF).
+- **산출** — DXF(실제 ARC/LINE 엔티티·레이어 9종·mm, **의존성 0으로 직접 작성**) · JSON 계약 · CSV · 검토보고서(HTML→인쇄 시 PDF).
 
 ## 검증
 
@@ -87,4 +94,8 @@ python 04_engine/gate_check.py
 
 ---
 
-버전 v1.0 (2026-08-25) · 라이선스는 저장소 루트 `LICENSE` 를 따릅니다.
+버전 **v1.1** (2026-08-25) · 라이선스는 저장소 루트 `LICENSE` 를 따릅니다.
+동봉 파이썬은 python.org 공식 embeddable 패키지이며 PSF License 를 따릅니다(`runtime/LICENSE_PYTHON.txt`).
+
+> v1.1 변경 — ① 파이썬 동봉판 추가(설치 없이 실행) ② DXF 를 **외부 라이브러리 없이 직접 작성**하도록 교체
+> (ezdxf 는 numpy 포함 92MB 라 동봉 불가였고, 이제 어떤 환경에서도 DXF 가 됩니다) ③ 설명서 그림 10장.

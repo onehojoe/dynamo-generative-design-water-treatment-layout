@@ -83,10 +83,15 @@ Windows 는 이 옵션이 켜져 있으면 **이미 사용 중인 포트에도 `
 한글을 넣으면 cp949 PC 에서 깨져 실행이 실패한다. `90_dist/build_dist.py` 가 생성 시 **비ASCII 문자를 assert 로 막는다**.
 RUN.bat / CHECK.bat 을 직접 손으로 고치지 말고 `90_dist/make_bats`(build 스크립트 내 정의)를 고쳐 재생성하라.
 
-### I-9. 추가 설치 없이 돌아야 한다
+### I-9. 추가 설치 없이 돌아야 한다 — **의존성 0**
 
-엔진·뷰어·보고서·JSON·CSV 는 **표준 라이브러리만** 쓴다. `ezdxf` 는 **DXF 내보내기 전용 선택 의존성**이며
-`export.have_ezdxf()` 로 확인하고 없으면 그 기능만 막는다. 새 의존성을 추가하지 마라.
+엔진·뷰어·보고서·JSON·CSV·**DXF 까지 전부 표준 라이브러리만** 쓴다.
+DXF 는 `export.py` 가 **R12(AC1009) ASCII 를 직접 쓴다**(엔티티 6종: LINE/ARC/CIRCLE/POLYLINE/POINT/TEXT).
+`ezdxf` 를 다시 끌어들이지 마라 — 의존성이 numpy 포함 **92MB** 라 배포가 불가능해진다.
+`have_ezdxf()` 는 이제 **게이트에서 되읽기 검증에만** 쓴다(없으면 그 검증만 생략).
+
+배포는 두 벌이다. **경량판**(파이썬 필요, 2.3MB) 과 **파이썬 동봉판**(`runtime\` 포함, 13.5MB).
+RUN.bat 이 `%~dp0runtime\python.exe` 를 **1순위**로 찾으므로 폴더만 넣으면 동봉판이 된다.
 
 ### I-10. 캔버스 좌표는 DPR 을 곱한다
 

@@ -79,17 +79,55 @@ def have_ezdxf():
         return False
 
 
-def to_dxf(sec, path):
-    try:
-        import ezdxf
-    except Exception as ex:                                   # noqa: BLE001
-        raise RuntimeError("DXF 내보내기에는 ezdxf 가 필요하다 (pip install ezdxf): %s" % ex)
-    doc = ezdxf.new("R2010", setup=True)
-    doc.header["$INSUNITS"] = 4                      # mm
-    for nm, col, desc in LAYERS:
-        doc.layers.add(nm, color=col)
-    msp = doc.modelspace()
+# ---------------------------------------------------------------- DXF 라이터
+# ★의존성 0. ezdxf(+numpy 등 92MB)를 배포에 넣지 않으려고 직접 쓴다.
+#   R12(AC1009) ASCII — 가장 관대한 포맷이고 CAD·Revit·Dynamo 가 모두 읽는다.
+#   내보내는 엔티티는 LINE / ARC / CIRCLE / POLYLINE+VERTEX / POINT / TEXT 6종뿐이다.
+#   검증은 게이트 G9 가 (개발 PC 의) ezdxf 로 되읽어서 한다.
+def _g(code, val):
+    return "%d\n%s\n" % (code, val)
 
+
+def _num(v):
+    return ("%.6f" % v).rstrip("0").rstrip(".") or "0"
+
+
+def _e_line(lay, a, b):
+    return (_g(0, "LINE") + _g(8, lay) + _g(10, _num(a[0])) + _g(20, _num(a[1])) + _g(30, "0")
+            + _g(11, _num(b[0])) + _g(21, _num(b[1])) + _g(31, "0"))
+
+
+def _e_arc(lay, c, r, a0, a1):
+    return (_g(0, "ARC") + _g(8, lay) + _g(10, _num(c[0])) + _g(20, _num(c[1])) + _g(30, "0")
+            + _g(40, _num(r)) + _g(50, _num(a0)) + _g(51, _num(a1)))
+
+
+def _e_circle(lay, c, r):
+    return (_g(0, "CIRCLE") + _g(8, lay) + _g(10, _num(c[0])) + _g(20, _num(c[1])) + _g(30, "0")
+            + _g(40, _num(r)))
+
+
+def _e_poly(lay, pts, closed=True):
+    o = (_g(0, "POLYLINE") + _g(8, lay) + _g(66, "1")
+         + _g(10, "0") + _g(20, "0") + _g(30, "0") + _g(70, "1" if closed else "0"))
+    for x, y in pts:
+        o += (_g(0, "VERTEX") + _g(8, lay)
+              + _g(10, _num(x)) + _g(20, _num(y)) + _g(30, "0"))
+    return o + _g(0, "SEQEND") + _g(8, lay)
+
+
+def _e_point(lay, c):
+    return _g(0, "POINT") + _g(8, lay) + _g(10, _num(c[0])) + _g(20, _num(c[1])) + _g(30, "0")
+
+
+def _e_text(lay, c, h, txt):
+    return (_g(0, "TEXT") + _g(8, lay) + _g(10, _num(c[0])) + _g(20, _num(c[1])) + _g(30, "0")
+            + _g(40, _num(h)) + _g(1, txt))
+
+
+def to_dxf(sec, path):
+    """R12 ASCII DXF 를 직접 쓴다. 외부 라이브러리 없음."""
+    ents = []
     rings = [("TN_INNER", 0.0)]
     for lay in sec.get("layers", []):
         rings.append(({"lining": "TN_LINING", "shotcrete": "TN_SHOT",
@@ -98,31 +136,51 @@ def to_dxf(sec, path):
         arcs = _arcs_of(sec, t)
         for nm, C, R, p0, p1 in arcs:
             a0, a1 = _ccw_pair(C, p0, p1)
-            msp.add_arc(center=C, radius=R, start_angle=a0, end_angle=a1,
-                        dxfattribs={"layer": layer})
+            ents.append(_e_arc(layer, C, R, a0, a1))
         b_r = arcs[-2][4] if sec["in"].get("five") else arcs[1][4]
-        b_l = arcs[-1][4]
-        msp.add_line(b_r, b_l, dxfattribs={"layer": layer})
+        ents.append(_e_line(layer, b_r, arcs[-1][4]))
 
-    msp.add_lwpolyline(sec["clr"], close=True, dxfattribs={"layer": "TN_CLEAR"})
-    msp.add_lwpolyline(sec["clr_off"], close=True, dxfattribs={"layer": "TN_CLEAR_OFF"})
+    ents.append(_e_poly("TN_CLEAR", sec["clr"]))
+    ents.append(_e_poly("TN_CLEAR_OFF", sec["clr_off"]))
     for d in sec["ducts"]:
-        msp.add_lwpolyline(d["pts"], close=True, dxfattribs={"layer": "TN_DUCT"})
+        ents.append(_e_poly("TN_DUCT", d["pts"]))
     for e in sec.get("extras", []):
         if e["kind"] == "jetfan":
-            msp.add_circle(e["c"], e["r"], dxfattribs={"layer": "TN_EXTRA"})
+            ents.append(_e_circle("TN_EXTRA", e["c"], e["r"]))
         else:
-            msp.add_lwpolyline(e["pts"], close=True, dxfattribs={"layer": "TN_EXTRA"})
-    for nm, C in (("O1", sec["O1"]), ("O2", sec["O2L"]), ("O2'", sec["O2R"])):
-        msp.add_point(C, dxfattribs={"layer": "TN_CENTER"})
-        msp.add_text(nm, height=120, dxfattribs={"layer": "TN_CENTER"}).set_placement(
-            (C[0] + 90, C[1] + 90))
+            ents.append(_e_poly("TN_EXTRA", e["pts"]))
+    for nm, C in (("O1", sec["O1"]), ("O2", sec["O2L"]), ("O2p", sec["O2R"])):
+        ents.append(_e_point("TN_CENTER", C))
+        ents.append(_e_text("TN_CENTER", (C[0] + 90, C[1] + 90), 120, nm))
     u = sec["u_road"]
     L = sec["width"]
-    msp.add_line((-u[0] * L, -u[1] * L), (u[0] * L, u[1] * L),
-                 dxfattribs={"layer": "TN_CENTER"})          # 노면선
-    doc.saveas(path)
+    ents.append(_e_line("TN_CENTER", (-u[0] * L, -u[1] * L), (u[0] * L, u[1] * L)))
+
+    tables = _g(0, "TABLE") + _g(2, "LAYER") + _g(70, str(len(LAYERS)))
+    for nm, col, _desc in LAYERS:
+        tables += (_g(0, "LAYER") + _g(2, nm) + _g(70, "0") + _g(62, str(col))
+                   + _g(6, "CONTINUOUS"))
+    tables += _g(0, "ENDTAB")
+
+    doc = (_g(0, "SECTION") + _g(2, "HEADER")
+           + _g(9, "$ACADVER") + _g(1, "AC1009")
+           + _g(9, "$INSUNITS") + _g(70, "4")
+           + _g(0, "ENDSEC")
+           + _g(0, "SECTION") + _g(2, "TABLES") + tables + _g(0, "ENDSEC")
+           + _g(0, "SECTION") + _g(2, "ENTITIES") + "".join(ents) + _g(0, "ENDSEC")
+           + _g(0, "EOF"))
+    with io.open(path, "w", encoding="utf-8", newline="\r\n") as f:
+        f.write(doc)
     return path
+
+
+def have_ezdxf():
+    """더 이상 필수가 아니다. 게이트에서 되읽기 검증에만 쓴다."""
+    try:
+        import ezdxf                                          # noqa: F401
+        return True
+    except Exception:                                         # noqa: BLE001
+        return False
 
 
 def to_json(sec, P, q, path=None):

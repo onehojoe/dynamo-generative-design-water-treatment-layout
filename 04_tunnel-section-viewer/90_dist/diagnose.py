@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """배포판 자가진단 — 남의 PC 에서 "안 돌아요" 를 추측 없이 잡기 위한 스크립트.
 
-검사: 파이썬 버전 / 인코딩 / 필수 파일 / 엔진 임포트 / 계산 1회 / 포트 / 선택 의존성(ezdxf) / 쓰기 권한.
+검사: 파이썬 버전 / 인코딩 / 필수 파일 / 엔진 계산 / DXF 작성 / 포트 / 쓰기 권한.
 결과는 화면과 진단결과.txt 에 동시에 남긴다(창이 닫혀도 파일이 남게).
 """
 import io
@@ -61,8 +61,13 @@ def main():
 
     try:
         import export as X
-        say(True, "DXF 내보내기", "ezdxf %s" % ("있음 → DXF 가능" if X.have_ezdxf()
-                                             else "없음 → DXF만 비활성 (JSON·CSV·보고서는 정상). 필요하면 pip install ezdxf"))
+        import tempfile
+        sec2 = E.build_section(dict(E.DEFAULT_PARAMS), -900, -2, 300, 100)
+        t = os.path.join(tempfile.gettempdir(), "_tn_diag.dxf")
+        X.to_dxf(sec2, t)
+        n = os.path.getsize(t)
+        os.remove(t)
+        say(n > 1000, "DXF 내보내기", "직접 작성 %d bytes (외부 라이브러리 불필요)" % n)
     except Exception as ex:                                    # noqa: BLE001
         say(False, "DXF 내보내기", str(ex))
 

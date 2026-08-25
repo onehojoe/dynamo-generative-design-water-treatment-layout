@@ -87,7 +87,7 @@ cc s EL1 theta R1 R2 R2p R3 R3p width height area_m2 exc_m2 flat margin margin_s
 
 요청 = `/api/section` + `"kind": "dxf" | "json" | "csv"` (csv 는 `"rows"` 필수)
 응답 `{"file":"…","url":"/export/…","dir":"08_export"}` → `GET /export/<파일명>` 다운로드.
-`kind=dxf` 인데 `ezdxf` 가 없으면 **400 + 안내 메시지**(다른 기능은 영향 없음).
+DXF 는 외부 라이브러리 없이 직접 쓴다(R12 ASCII) — 어떤 환경에서도 된다.
 
 ### `GET /api/legacy` · `GET /api/defaults` · `GET /api/env`
 
@@ -95,7 +95,7 @@ cc s EL1 theta R1 R2 R2p R3 R3p width height area_m2 exc_m2 flat margin margin_s
 |---|---|
 | `/api/legacy` | 발주처 원본 `{rows:[60행], short:[10행], input4:{project,tunnel,section}}` — **참조 전용** |
 | `/api/defaults` | `{params: DEFAULT_PARAMS, sweep: DEFAULT_SWEEP}` |
-| `/api/env` | `{python, ezdxf(bool), legacy_rows, port}` — 환경 확인용 |
+| `/api/env` | `{python, dxf(항상 true), ezdxf(게이트 검증용), legacy_rows, port}` |
 
 ---
 
@@ -140,12 +140,14 @@ cc s EL1 theta R1 R2 R2p R3 R3p width height area_m2 exc_m2 flat margin margin_s
 | `TN_LINING` | 3 | 라이닝 외면 | 동일 |
 | `TN_SHOT` | 4 | 숏크리트 외면 | 동일 |
 | `TN_EXC` | 1 | 굴착선 | 동일 |
-| `TN_CLEAR` / `TN_CLEAR_OFF` | 2 | 시설한계 / +시공오차 | LWPOLYLINE |
-| `TN_DUCT` | 6 | 공동구 | LWPOLYLINE |
-| `TN_EXTRA` | 5 | 검사원통로·제트팬 | LWPOLYLINE / CIRCLE |
+| `TN_CLEAR` / `TN_CLEAR_OFF` | 2 | 시설한계 / +시공오차 | POLYLINE |
+| `TN_DUCT` | 6 | 공동구 | POLYLINE |
+| `TN_EXTRA` | 5 | 검사원통로·제트팬 | POLYLINE / CIRCLE |
 | `TN_CENTER` | 8 | 중심점·라벨·노면선 | POINT / TEXT / LINE |
 
-`$INSUNITS = 4`(mm). **폴리라인 근사가 아니라 실제 ARC** 이므로 CAD 에서 반지름·중심이 그대로 살아 있다.
+`$ACADVER = AC1009`(R12) · `$INSUNITS = 4`(mm). **폴리라인 근사가 아니라 실제 ARC** 이므로
+CAD 에서 반지름·중심이 그대로 살아 있다. 파일은 `export.py` 가 **직접 쓴다**(외부 라이브러리 없음).
+닫힌 도형은 R12 규격상 `LWPOLYLINE` 이 아니라 `POLYLINE`+`VERTEX`+`SEQEND` 로 나간다.
 
 ---
 
@@ -181,8 +183,8 @@ five_center(0|1)  theta3(°)
 ## 5. 내보내기 함수 (`04_engine/export.py`)
 
 ```python
-have_ezdxf() -> bool          # 없으면 DXF 만 비활성
-to_dxf(sec, path) -> path     # RuntimeError 가능(ezdxf 부재)
+to_dxf(sec, path) -> path     # R12 ASCII 직접 작성. 의존성 없음
+have_ezdxf() -> bool          # 게이트의 되읽기 검증에만 쓴다
 to_json(sec, P, q, path=None) -> dict
 to_csv(rows, path) -> path    # UTF-8 BOM
 ```
