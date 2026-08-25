@@ -1,0 +1,11 @@
+# 05_terrain-alignment 는 «배포 폴더»다. MANIFEST.json 이 파일별 SHA-256 을 들고 있어서
+# git 이 줄바꿈을 정규화하면 클론한 쪽에서 무결성 검사가 통째로 FAIL 한다(실제로 겪음).
+# 그래서 이 폴더는 텍스트 취급을 끄고 바이트 그대로 저장·체크아웃한다.
+# .bat 은 이미 CRLF 로 커밋되므로 그대로 나온다 — cmd 는 LF 배치파일에서 깨진다.
+05_terrain-alignment/** -text
+
+*.png binary
+*.jpg binary
+*.zip binary
+*.rvt binary
+*.dyn -text

@@ -1,0 +1,206 @@
+{
+ "name": "지형·선형 GD 워크벤치",
+ "version": "1.7",
+ "built": "2026-08-25",
+ "owner": "교육용 공개 배포본",
+ "runtime": {
+  "required": "브라우저(Chrome/Edge 권장)",
+  "python": "불필요 — 자가검사·데이터 굽기에만 사용",
+  "network": "불필요",
+  "install": "없음. 압축을 풀고 RUN.bat"
+ },
+ "honest": [
+  "지형은 전량 합성 — 원본에 Z 없음",
+  "설계기준 수치 12개 중 11개 법령 원문 대조 전",
+  "터널·교량은 높이 임계값 판정(경제성 비교 아님)",
+  "대지는 데이터 범위+여유 150m 사각형(실제 부지 경계 아님)",
+  "Dynamo 원본과 실행값 대조 미실시"
+ ],
+ "files": {
+  "AI_GUIDE.md": {
+   "bytes": 10340,
+   "sha256": "d8c58e67338379eafa69f021988546763b661092dc57d2869f8683f57bc0b262"
+  },
+  "CHANGELOG.md": {
+   "bytes": 1310,
+   "sha256": "b31e6cc94c77b643a1de6807111e4b3e1ed6cb87fd3f17060518afb16e406501"
+  },
+  "README.md": {
+   "bytes": 2916,
+   "sha256": "5e3f61076dcb5993ca6708fd7670381f2d4006f00afe540bb6d0e4dbd9f9cd90"
+  },
+  "RUN.bat": {
+   "bytes": 2100,
+   "sha256": "e36c6de3b934f43016cdc69470371cdd7330c9bcd3328cf5401882543002f8ed"
+  },
+  "START_HERE.txt": {
+   "bytes": 851,
+   "sha256": "870750cd44fd3207e4b0dc2ff1d0e676165eefd704b90c0f58bd38d06eb7a333"
+  },
+  "TEST.bat": {
+   "bytes": 981,
+   "sha256": "e4817abfdca7b0d369a5486f79223b521222e569c14a542167e7a4ee6c46ec50"
+  },
+  "USAGE.md": {
+   "bytes": 11980,
+   "sha256": "35db6fc0201ef2651333dc32c13b964c46ae81bce5898a645ed8b0a878caf97c"
+  },
+  "data/_aux.js": {
+   "bytes": 7276,
+   "sha256": "9d5affd03a61b807e94268ae55d102228b487eb7c89eafedad5e63ed7665c60d"
+  },
+  "data/design_standards.json": {
+   "bytes": 2479,
+   "sha256": "135eb28fe963da3698b90671a69307c40b663656c4a8a676ba40706915203a3e"
+  },
+  "data/site.js": {
+   "bytes": 35350,
+   "sha256": "85b8fb4a33985f9f63c2b00e7b1aa2e3f55810878da0223605df293256f46456"
+  },
+  "data/site.json": {
+   "bytes": 35187,
+   "sha256": "233b6913d30b2c0f66c8aa5749049b9b852c023593a4a8a85509bba36551469f"
+  },
+  "data/standards_registry.json": {
+   "bytes": 6005,
+   "sha256": "e9be5a6ec4820e04df6f173425d384e9fd96f7c9c76589b27449129024bc45d7"
+  },
+  "data/terrain.js": {
+   "bytes": 829865,
+   "sha256": "d4720d9b6fcc6d0ac5f0a0955253373c024a2f3a72b0850827a8487cc67fcafe"
+  },
+  "data/terrain.json": {
+   "bytes": 829696,
+   "sha256": "50f7afb8e05d4e160c199baa993b7f31b1f2d475371aee7ed98ead381096a67c"
+  },
+  "docs/img/01_overview.png": {
+   "bytes": 403801,
+   "sha256": "7475d065964bd6962c2008ac9d78924804eca6c610fa80b261541010c7f1c213"
+  },
+  "docs/img/02_plan.png": {
+   "bytes": 279084,
+   "sha256": "c2b8b13cf32ca2920aac458e5f4d12746e84e054bc3c82b3ece3cd2b2c30e73d"
+  },
+  "docs/img/03_terrain_panel.png": {
+   "bytes": 25084,
+   "sha256": "8c5ed3eaa88759ba2d46ad853c8384f426f950d03aa66709af7fb2b08bac696c"
+  },
+  "docs/img/04_terrain_seed7.png": {
+   "bytes": 274992,
+   "sha256": "dd71f7c1585d5d438e88c865503f56489861e9604490d2badaf8deec99c1618f"
+  },
+  "docs/img/05_terrain_alt.png": {
+   "bytes": 384189,
+   "sha256": "34722359bcb006d5b44f3a1ab20195a1a78b4487da32e4ee127eb0b5b973ffb3"
+  },
+  "docs/img/06_profile.png": {
+   "bytes": 38611,
+   "sha256": "6b6471a1794b91179071405f5ff3a7b5cfbc6534cb983359d876cb6e6d569ebc"
+  },
+  "docs/img/07_section.png": {
+   "bytes": 9863,
+   "sha256": "188d87f98cc9a7430bbe7e889cee7755136416a506c62c87a45634b382d5f5ac"
+  },
+  "docs/img/08_struct_panel.png": {
+   "bytes": 15007,
+   "sha256": "f959e043068ff70bd21392662337deea668d699d229cb70bf4fe8e3113445202"
+  },
+  "docs/img/09_gallery.png": {
+   "bytes": 548740,
+   "sha256": "3077a4209cc67a8b60ff784ce9d4eaeb92cc05d95169e52174c9e155d8744829"
+  },
+  "docs/설명자료.html": {
+   "bytes": 36735,
+   "sha256": "e43c42fc87d454eb63cd7f4b285b26f03778ba99ef272df0bab48e5d5ba8f9a3"
+  },
+  "serve.py": {
+   "bytes": 4350,
+   "sha256": "09b32dc02340b79cf329fb7635c192d8d446c31a8561980c30899161784ae141"
+  },
+  "tools/build_release.py": {
+   "bytes": 2963,
+   "sha256": "f496e38a082e4faf530cde1044da2d5c316b1bd8b6fb732750d406e0b050acdb"
+  },
+  "tools/build_terrain.py": {
+   "bytes": 9566,
+   "sha256": "1f03e2023c403c09ff58776c03f1fd332270a21b29866d82a71acd338699b813"
+  },
+  "tools/import_terrain.py": {
+   "bytes": 11104,
+   "sha256": "f9b6af1387feea3d8aeaa66639e2a74fe987fae4a02e3f71786cfa6382178bfa"
+  },
+  "tools/make_docs.py": {
+   "bytes": 8285,
+   "sha256": "ad15d238b5432ad7ac8fdb45177d679942613424cb3e66e305bcb3b8c7474d15"
+  },
+  "tools/make_guide_shots.py": {
+   "bytes": 4997,
+   "sha256": "1e4289fe46bc4b3a443bcf76e87e0e67d49d56ccf2a3eddb644c3edb897d8dd6"
+  },
+  "tools/make_sample_site.py": {
+   "bytes": 5621,
+   "sha256": "ea2e53bbae2d2898502ec7d115c476405e9bcc734da19a7dbd7fdbb64f172df1"
+  },
+  "tools/pack_data.py": {
+   "bytes": 2895,
+   "sha256": "a55356b85876c9665e87624b7050e2adffbbb7d85f20a5043aa292dbf0aa0881"
+  },
+  "tools/selfcheck.py": {
+   "bytes": 8337,
+   "sha256": "75fcc6afbafab6a83393b3ec54515a795b69aef8206c375e13190dff476de3a8"
+  },
+  "web/index.html": {
+   "bytes": 28316,
+   "sha256": "c160b2eea948441e63bd5c06fb57e6026d043efe95066a52014c406d751144c6"
+  },
+  "web/js/alignment.js": {
+   "bytes": 7479,
+   "sha256": "4780182d3633bf9eefced1ef7e31212a120f5746782cee9cdffcec690bd76bf9"
+  },
+  "web/js/app.js": {
+   "bytes": 78864,
+   "sha256": "ba19fa3800396e652eb0587e0664456506e89d4c3e07bdbf2558bbc0f5dfd255"
+  },
+  "web/js/design.js": {
+   "bytes": 8795,
+   "sha256": "9e8f7483806fad5f4060fe48d153bdca84f9052d91f463ff784da9b1bb36603b"
+  },
+  "web/js/ga.js": {
+   "bytes": 6848,
+   "sha256": "1068e38afdbd934ddc87649f81ec6f54f404a2073ec2d2ec00c67a097a7321b4"
+  },
+  "web/js/geom.js": {
+   "bytes": 4015,
+   "sha256": "947fc053f90958dd3afd80cc81035cb3a260bae7f1a8211265822b42782fdea0"
+  },
+  "web/js/profile.js": {
+   "bytes": 16712,
+   "sha256": "9dcc142792acb45f3627eb38585cfcc5f5e92ef222d37f9af6b8a1069f7fe202"
+  },
+  "web/js/score.js": {
+   "bytes": 8538,
+   "sha256": "9a189262e3f2865d443e506ab53389e57dde8b955969e2ee14cd4551a5d1b7ab"
+  },
+  "web/js/section.js": {
+   "bytes": 5992,
+   "sha256": "17d1ed1337e3323e1ef3429b625a044454b8d1ab8cd35b43a06ca6996e1b61e6"
+  },
+  "web/js/terrain.js": {
+   "bytes": 5961,
+   "sha256": "cafae603b53c4ea51811c8c70d9d95e1d363b887da3cefdb7a5a303673096be3"
+  },
+  "web/js/terrain_gen.js": {
+   "bytes": 7740,
+   "sha256": "416233b2e787b49642218c160378363b51cbeeae5169a6700de1de77bed5e125"
+  },
+  "web/js/verify.js": {
+   "bytes": 2041,
+   "sha256": "c50e2599813849c40abd05aa83f693530f6644532d8e7ed7b151d063cac10750"
+  },
+  "web/js/worker.js": {
+   "bytes": 1170,
+   "sha256": "c82619847ab1a8563cae6d6d27b1c168f3c1749721e9f91174f5d798965e630f"
+  }
+ },
+ "note": "부지 데이터는 tools/make_sample_site.py 로 만든 합성 샘플이다. 특정 시설을 나타내지 않는다."
+}
