@@ -16,7 +16,7 @@ th{background:#eef2f7;font-weight:600}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 code{background:#f1f4f8;border:1px solid #dde3ea;border-radius:4px;padding:1px 5px;font-size:13px}
 figure{margin:14px 0 18px}
-figure img{width:100%;border:1px solid #c8d0da;border-radius:6px;display:block}
+figure img{max-width:100%;width:auto;max-height:940px;border:1px solid #c8d0da;border-radius:6px;display:block;margin:0 auto}
 figcaption{font-size:12.5px;color:#5a6674;margin-top:6px}
 ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 .tip{background:#eef6ff;border:1px solid #b9d5f5;border-radius:7px;padding:11px 15px;margin:12px 0;font-size:14px}
@@ -69,8 +69,12 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 화면과 <code>CHECK_RESULT.txt</code> 에 남깁니다. <code>[FAIL]</code> 줄이 있으면 그 파일을 그대로 보내 주시면 됩니다.</div>
 
 <h2>3. 화면 구성</h2>
-<figure><img src="img/fig1_화면구성.png" alt="화면 구성">
-<figcaption>그림 1 — 실제 화면. 번호별 설명은 그림 아래 범례 참조.</figcaption></figure>
+<figure><img src="img/fig1_화면구성.png" alt="그림 1 — 실제 화면. 번호별 설명은 그림 안 범례에 있습니다.">
+<figcaption>그림 1 — 실제 화면. 번호별 설명은 그림 안 범례에 있습니다.</figcaption></figure>
+<h3>입력 패널 자세히</h3>
+<figure><img src="img/fig2_입력패널.png" alt="그림 2 — 좌측 입력 패널. 위에서 아래로 결정변수 → 시설한계 → 공동구 → 단면구성 → 부대공 → 판정기준 → 스윕범위 순입니다.">
+<figcaption>그림 2 — 좌측 입력 패널. 위에서 아래로 결정변수 → 시설한계 → 공동구 → 단면구성 → 부대공 → 판정기준 → 스윕범위 순입니다.</figcaption></figure>
+
 
 <h2>4. 5분 따라하기</h2>
 <ol class="steps">
@@ -87,8 +91,9 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 </ol>
 
 <h2>5. 단면 구성 요소</h2>
-<figure><img src="img/fig2_단면요소.png" alt="단면 구성 요소">
-<figcaption>그림 2 — 색으로 구간을 구분합니다. 파랑 R1(상부호), 노랑 R2(좌측벽), 분홍 R2′(우측벽).</figcaption></figure>
+<figure><img src="img/fig3_단면요소.png" alt="그림 3 — 색으로 구간을 구분합니다. 파랑 R1(상부호), 노랑 R2(좌측벽), 분홍 R2′(우측벽).">
+<figcaption>그림 3 — 색으로 구간을 구분합니다. 파랑 R1(상부호), 노랑 R2(좌측벽), 분홍 R2′(우측벽).</figcaption></figure>
+
 
 <table>
 <tr><th style="width:150px">요소</th><th>화면 표시</th><th>의미</th></tr>
@@ -136,6 +141,14 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 <b>제약 반영</b>을 켜면 R1·R2 를 그 형상까지 품도록 다시 풉니다.
 기본 규격(Φ1500·750×1710)에서는 여유가 있어 결과가 바뀌지 않습니다 — 팬을 Φ2000 이상으로 키우면 그때부터 R1 이 실제로 커집니다.</div>
 
+<figure><img src="img/fig4_부대공.png" alt="그림 4 — 같은 제트팬 Φ2500. 왼쪽은 표시만이라 R1 6,860mm 그대로, 오른쪽은 제약을 반영해 R1 7,755mm 로 크라운이 올라갑니다(+895mm · 내공 +17.26㎡).">
+<figcaption>그림 4 — 같은 제트팬 Φ2500. 왼쪽은 표시만이라 R1 6,860mm 그대로, 오른쪽은 제약을 반영해 R1 7,755mm 로 크라운이 올라갑니다(+895mm · 내공 +17.26㎡).</figcaption></figure>
+<h3>층 구성 — 라이닝 · 숏크리트 · 굴착선</h3>
+<p>내공선의 각 원호를 <b>중심은 그대로 두고 반지름만 키워</b> 링을 만듭니다(동심 오프셋). 접선 연속이 그대로 유지됩니다.</p>
+<figure><img src="img/fig5_층구성.png" alt="그림 5 — 왼쪽 내공선만 / 오른쪽 라이닝 300 · 숏크리트 100 · 여굴 100mm 를 누적한 굴착선까지. 바깥 빨강 점선 안쪽 면적이 굴착단면적입니다.">
+<figcaption>그림 5 — 왼쪽 내공선만 / 오른쪽 라이닝 300 · 숏크리트 100 · 여굴 100mm 를 누적한 굴착선까지. 바깥 빨강 점선 안쪽 면적이 굴착단면적입니다.</figcaption></figure>
+
+
 <h3>판정 기준</h3>
 <table>
 <tr><th style="width:150px">항목</th><th>기본값</th><th>의미</th></tr>
@@ -146,8 +159,11 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 여유폭 50mm 는 시공오차를 <b>잠정</b>으로 쓴 값입니다. 확정 기준을 받으면 화면에서 바꿔 다시 돌리면 됩니다 — 엔진은 그대로입니다.</div>
 
 <h2>7. 대안 탐색</h2>
-<figure><img src="img/fig3_대안비교.png" alt="대안 형상 비교">
-<figcaption>그림 3 — 판정 OK 안을 면적 오름차순 12개. 클릭하면 본 화면에 반영됩니다.</figcaption></figure>
+<figure><img src="img/fig6_파레토.png" alt="그림 6 — 파레토 산점도와 대안 표. 점 하나가 대안 하나입니다.">
+<figcaption>그림 6 — 파레토 산점도와 대안 표. 점 하나가 대안 하나입니다.</figcaption></figure>
+<figure><img src="img/fig7_대안비교.png" alt="그림 7 — [대안 형상 비교] 탭. 판정 OK 안을 면적 오름차순 12개로 나란히 봅니다.">
+<figcaption>그림 7 — [대안 형상 비교] 탭. 판정 OK 안을 면적 오름차순 12개로 나란히 봅니다.</figcaption></figure>
+
 
 <h3>파레토 산점도 읽는 법</h3>
 <ul>
@@ -171,6 +187,12 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 <div class="warn"><b>DXF 만 <code>ezdxf</code> 가 필요합니다.</b> 없으면 그 버튼만 막히고 뷰어·보고서·JSON·CSV 는 전부 정상입니다.
 필요하면 <code>pip install ezdxf</code>.</div>
 
+<figure><img src="img/fig8_검토보고서.png" alt="그림 8 — [검토보고서] 로 자동 생성된 문서. 원본 엑셀 서식을 따르되 #REF! 로 깨져 있던 6칸을 실값으로 채웁니다.">
+<figcaption>그림 8 — [검토보고서] 로 자동 생성된 문서. 원본 엑셀 서식을 따르되 #REF! 로 깨져 있던 6칸을 실값으로 채웁니다.</figcaption></figure>
+<figure><img src="img/fig9_DXF.png" alt="그림 9 — 내보낸 DXF 를 되읽어 그린 것. 폴리라인 근사가 아니라 실제 ARC/LINE 엔티티이고 레이어 9종으로 분리돼 있습니다.">
+<figcaption>그림 9 — 내보낸 DXF 를 되읽어 그린 것. 폴리라인 근사가 아니라 실제 ARC/LINE 엔티티이고 레이어 9종으로 분리돼 있습니다.</figcaption></figure>
+
+
 <h2>9. 용어</h2>
 <table>
 <tr><th style="width:150px">용어</th><th>뜻</th></tr>
@@ -184,6 +206,8 @@ ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
 <tr><td>여굴</td><td>굴착 시 계획선보다 더 파이는 여유</td></tr>
 </table>
 
+<figure><img src="img/fig10_원본60행.png" alt="그림 10 — [원본 60행] 탭. 발주처 원본 결과를 참조용으로 병기합니다.">
+<figcaption>그림 10 — [원본 60행] 탭. 발주처 원본 결과를 참조용으로 병기합니다.</figcaption></figure>
 <h2>10. ★ 알고 써야 할 한계</h2>
 <div class="bad">
 <b>이 도구가 보장하는 것과 보장하지 않는 것은 다릅니다.</b> 보고서에도 같은 내용이 자동으로 들어갑니다.

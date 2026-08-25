@@ -421,6 +421,14 @@ async function boot() {
   if (u.get('bindjet') === '1') { $('ck_jet').checked = true; $('bd_jet').checked = true; }
   if (u.get('bindwalk') === '1') { $('ck_walk').checked = true; $('bd_walk').checked = true; }
   ['cc', 's', 'el', 'th'].forEach(k => { if (u.has(k)) $(k).value = u.get(k); });
+  // 임의 입력/체크박스를 URL 로 지정 — 문서용 캡처와 QA 재현에 쓴다
+  //   예: ?p_jetfan_d=2.5&bd_jet=1&ck_layers=0
+  document.querySelectorAll('input[id]').forEach(el => {
+    if (!u.has(el.id)) return;
+    const v = u.get(el.id);
+    if (el.type === 'checkbox') el.checked = (v === '1' || v === 'true');
+    else el.value = v;
+  });
   syncLabels();
   await loadLegacy();
   await refresh();
