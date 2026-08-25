@@ -2,9 +2,10 @@
 """배포본 굽기 — 순서가 중요하다.
 
   ① 데이터 굽기 (JSON → JS)
-  ② 설명자료 HTML 생성
-  ③ MANIFEST 갱신          ← 반드시 마지막. 앞 단계가 파일을 바꾸므로.
-  ④ 자가검사
+  ② 캐시버스트 ?v= 도장     ← 잊으면 사용자가 F5 해도 옛 코드를 쓴다
+  ③ 설명자료 HTML 생성
+  ④ MANIFEST 갱신          ← 반드시 마지막. 앞 단계가 파일을 바꾸므로.
+  ⑤ 자가검사
 
 ★ ③을 먼저 하면 ②가 만든 HTML 의 해시가 어긋나 자가검사가 FAIL 한다(실제로 겪음).
 
@@ -65,7 +66,8 @@ def manifest():
 
 def main():
     run("pack_data.py", "① 데이터 굽기")
-    run("make_docs.py", "② 설명자료")
+    run("stamp_version.py", "② 캐시버스트")
+    run("make_docs.py", "③ 설명자료")
     manifest()
     print("\n── ④ 자가검사 ──")
     r = subprocess.run([PY, os.path.join(HERE, "selfcheck.py")], cwd=ROOT,

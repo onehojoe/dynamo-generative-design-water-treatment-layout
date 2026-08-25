@@ -1,6 +1,6 @@
 {
  "name": "지형·선형 GD 워크벤치",
- "version": "1.7",
+ "version": "1.7.1",
  "built": "2026-08-25",
  "owner": "교육용 공개 배포본",
  "runtime": {
@@ -118,8 +118,8 @@
    "sha256": "09b32dc02340b79cf329fb7635c192d8d446c31a8561980c30899161784ae141"
   },
   "tools/build_release.py": {
-   "bytes": 2963,
-   "sha256": "f496e38a082e4faf530cde1044da2d5c316b1bd8b6fb732750d406e0b050acdb"
+   "bytes": 3111,
+   "sha256": "10cb20b017130d442f1226c68a99681f9cd11623b5b21c85625bc2532d075fc6"
   },
   "tools/build_terrain.py": {
    "bytes": 9566,
@@ -149,9 +149,13 @@
    "bytes": 8337,
    "sha256": "75fcc6afbafab6a83393b3ec54515a795b69aef8206c375e13190dff476de3a8"
   },
+  "tools/stamp_version.py": {
+   "bytes": 1701,
+   "sha256": "a36a89229c96dc52883547fa2b5a261d0ff8cab65b3eb711a30a6704b54a1eaa"
+  },
   "web/index.html": {
-   "bytes": 28316,
-   "sha256": "c160b2eea948441e63bd5c06fb57e6026d043efe95066a52014c406d751144c6"
+   "bytes": 28386,
+   "sha256": "b163b4f9446ee13fbd6c506a5d4611bd0b5bcb04550bd3ac8fe92d673ef611af"
   },
   "web/js/alignment.js": {
    "bytes": 7479,
