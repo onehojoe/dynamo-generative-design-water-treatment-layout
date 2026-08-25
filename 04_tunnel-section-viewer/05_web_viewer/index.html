@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NATM 내공단면 산정 뷰어</title>
+<link rel="stylesheet" href="style.css?v=20260825e">
+</head><body>
+
+<header>
+  <div class="ttl">NATM 도로터널 <b>내공단면 산정</b> 뷰어
+    <span class="tag">23번 · 한국종합기술 기술연구소 자료 기반</span></div>
+  <div class="hd-right">
+    <span id="prj" class="dim"></span>
+    <button id="btnHelp" title="사용자 설명서">도움말</button>
+    <button id="btnDxf">DXF</button>
+    <button id="btnJson">JSON</button>
+    <button id="btnCsv">CSV</button>
+    <button id="btnReport">검토보고서</button>
+    <button id="btnSweep" class="primary">스윕 실행</button>
+  </div>
+</header>
+
+<div id="app">
+
+  <aside id="left">
+    <div class="sec">
+      <h3>결정 변수 <span class="dim">4축</span></h3>
+      <label>도로 중심거리 <b><span id="v_cc">-0.90</span> m</b>
+        <input type="range" id="cc" min="-1.2" max="-0.2" step="0.05" value="-0.9"></label>
+      <label>편경사 <b><span id="v_s">-2</span> %</b>
+        <input type="range" id="s" min="-4" max="4" step="1" value="-2"></label>
+      <label>중심높이 EL1 <b><span id="v_el">0.30</span> m</b>
+        <input type="range" id="el" min="0" max="1.0" step="0.05" value="0.3"></label>
+      <label>중심각 θ <b><span id="v_th">100</span>°</b>
+        <input type="range" id="th" min="80" max="150" step="5" value="100"></label>
+    </div>
+
+    <div class="sec">
+      <h3>시설한계 <span class="dim">Input1 · m</span></h3>
+      <div class="g2">
+        <label>좌 차도폭<input type="number" id="p_lane_L" step="0.1" value="3.0"></label>
+        <label>좌 길어깨<input type="number" id="p_shoulder_L" step="0.1" value="1.2"></label>
+        <label>우 차도폭<input type="number" id="p_lane_R" step="0.1" value="3.6"></label>
+        <label>우 길어깨<input type="number" id="p_shoulder_R" step="0.1" value="3.0"></label>
+        <label>통과높이 H<input type="number" id="p_H" step="0.1" value="4.8"></label>
+        <label>헌치 a<input type="number" id="p_ha" step="0.1" value="1.0"></label>
+        <label>헌치 b<input type="number" id="p_hb" step="0.1" value="0.8"></label>
+        <label>시공오차 mm<input type="number" id="tol" step="5" value="50"></label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>공동구 <span class="dim">Input2 · m</span></h3>
+      <div class="g2">
+        <label>좌 폭<input type="number" id="p_duct_LW" step="0.1" value="0.8"></label>
+        <label>좌 높이<input type="number" id="p_duct_LH" step="0.1" value="0.9"></label>
+        <label>우 폭<input type="number" id="p_duct_RW" step="0.1" value="0.8"></label>
+        <label>우 높이<input type="number" id="p_duct_RH" step="0.1" value="0.6"></label>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>단면 구성 <span class="dim">두께 · m</span></h3>
+      <div class="g2">
+        <label>라이닝 두께<input type="number" id="p_lining_t" step="0.05" value="0.3"></label>
+        <label>숏크리트<input type="number" id="p_shot_t" step="0.05" value="0.1"></label>
+        <label>여굴<input type="number" id="p_overbreak" step="0.02" value="0.1"></label>
+        <label>5심원 전이각 θ3°<input type="number" id="p_theta3" step="5" value="150"></label>
+      </div>
+      <label class="ck" style="margin-top:7px"><input type="checkbox" id="ck_five"> 5심원(R3/R3') 시도</label>
+      <div class="note" id="fiveNote">3심원. 5심원은 하부 측벽을 R3 로 한 단 더 나누는 구성인데,
+        공동구·시설한계 하단이 노면 레벨에서 최대폭을 규정하면 <b>R3 ≤ R2 로는 성립하지 않아 3심원으로 되돌린다</b>(사유 표기).</div>
+    </div>
+
+    <div class="sec">
+      <h3>부대공 <span class="warn">배치 기준 자료에 없음 · 가정</span></h3>
+      <div class="g2">
+        <label>검사원통로 폭 m<input type="number" id="p_walk_w" step="0.05" value="0.75"></label>
+        <label>통로 높이 m<input type="number" id="p_walk_h" step="0.05" value="1.71"></label>
+        <label>제트팬 Φ m<input type="number" id="p_jetfan_d" step="0.05" value="1.5"></label>
+        <label>팬 이격 ×D<input type="number" id="p_jet_gap_ratio" step="0.05" value="0.3"></label>
+      </div>
+      <table class="sw" style="margin-top:8px">
+        <tr><th style="text-align:left">항목</th><th>표시</th><th>제약 반영</th></tr>
+        <tr><td>검사원통로</td><td style="text-align:center"><input type="checkbox" id="ck_walk" checked></td>
+            <td style="text-align:center"><input type="checkbox" id="bd_walk"></td></tr>
+        <tr><td>제트팬</td><td style="text-align:center"><input type="checkbox" id="ck_jet"></td>
+            <td style="text-align:center"><input type="checkbox" id="bd_jet"></td></tr>
+      </table>
+      <div class="note">가정: 통로 = 좌 공동구 뚜껑 위 / 팬 하단 = 시설한계 상단, 라이닝과 0.3D 이격.
+        <b>제약 반영</b>을 켜면 R1·R2 산정에 실제로 들어간다(기본값에서는 여유가 있어 구속되지 않는다).</div>
+    </div>
+
+    <div class="sec">
+      <h3>판정 기준 <span class="warn">자료에 없음 · 잠정</span></h3>
+      <div class="g2">
+        <label>편평률 하한<input type="number" id="flat_min" step="0.005" value="0.55"></label>
+        <label>여유폭 하한 mm<input type="number" id="margin_min" step="5" value="50"></label>
+      </div>
+      <div class="note">원본 60행에서 OK 로 찍힌 6행이 전부 편평률 0.5501~0.5510 → 0.55 로 역산(추정).
+        여유폭 하한은 검토보고서의 시공오차 50mm 를 잠정 적용. <b>추후 확인 필요.</b></div>
+    </div>
+
+    <div class="sec">
+      <h3>스윕 범위 <span class="dim">Input3</span></h3>
+      <table class="sw">
+        <tr><th></th><th>시작</th><th>끝</th><th>간격</th></tr>
+        <tr><td>중심거리</td><td><input id="sw_cc0" value="-0.9"></td><td><input id="sw_cc1" value="-0.5"></td><td><input id="sw_cc2" value="0.05"></td></tr>
+        <tr><td>편경사</td><td><input id="sw_s0" value="-2"></td><td><input id="sw_s1" value="2"></td><td><input id="sw_s2" value="1"></td></tr>
+        <tr><td>중심높이</td><td><input id="sw_el0" value="0.3"></td><td><input id="sw_el1" value="0.5"></td><td><input id="sw_el2" value="0.05"></td></tr>
+        <tr><td>중심각</td><td><input id="sw_th0" value="100"></td><td><input id="sw_th1" value="130"></td><td><input id="sw_th2" value="10"></td></tr>
+      </table>
+      <div class="note" id="swInfo">선언 조합 = 9 × 5 × 5 × 4 = <b>900</b></div>
+    </div>
+
+    <div class="sec">
+      <h3>표시</h3>
+      <label class="ck"><input type="checkbox" id="ck_clr" checked> 시설한계 + 오프셋</label>
+      <label class="ck"><input type="checkbox" id="ck_duct" checked> 공동구</label>
+      <label class="ck"><input type="checkbox" id="ck_layers" checked> 라이닝·숏크리트·굴착선</label>
+      <label class="ck"><input type="checkbox" id="ck_geo" checked> 중심점·스프링잉·반지름선</label>
+      <label class="ck"><input type="checkbox" id="ck_dim" checked> 치수</label>
+    </div>
+  </aside>
+
+  <main id="center">
+    <div id="cards"></div>
+    <div id="cvWrap">
+      <canvas id="cv"></canvas>
+      <div id="hint">휠=줌 · 드래그=이동 · 더블클릭=맞춤</div>
+    </div>
+  </main>
+
+  <aside id="right">
+    <div class="tabs">
+      <button class="tab on" data-t="pareto">대안 탐색</button>
+      <button class="tab" data-t="grid">대안 형상 비교</button>
+      <button class="tab" data-t="legacy">원본 60행</button>
+    </div>
+
+    <div class="pane on" id="pane-pareto">
+      <canvas id="sc"></canvas>
+      <div class="scLegend"><span class="d ok"></span>판정 OK <span class="d ng"></span>NG
+        <span class="d cur"></span>현재 <span class="d best"></span>최소면적</div>
+      <div class="tblWrap"><table id="tbl"><thead><tr>
+        <th>#</th><th>중심거리</th><th>편경사</th><th>EL1</th><th>θ</th>
+        <th>R1</th><th>R2</th><th>R2'</th><th>면적㎡</th><th>편평률</th><th>여유</th><th>판정</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="pane" id="pane-grid">
+      <div class="note">판정 OK 안을 면적 오름차순으로 12개 — 클릭하면 본 화면에 반영된다.</div>
+      <div id="thumbs"></div>
+    </div>
+
+    <div class="pane" id="pane-legacy">
+      <div class="note"><b>원본 60행(참조 전용).</b> 원본 R2/R2' 산정 알고리즘은 자료에 없어
+        <b>재현하지 않았다</b>(오차 400~2500mm). R1 구성 규칙만 56/60 일치.</div>
+      <div class="tblWrap"><table id="tblLeg"><thead><tr>
+        <th>#</th><th>중심거리</th><th>편경사</th><th>EL1</th><th>θ</th>
+        <th>R1</th><th>R2</th><th>R2'</th><th>면적</th><th>편평률</th><th>판정</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+  </aside>
+</div>
+
+<script src="app.js?v=20260825e"></script>
+</body></html>

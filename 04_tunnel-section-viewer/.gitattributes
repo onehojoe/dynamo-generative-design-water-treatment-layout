@@ -1,0 +1,2 @@
+# .bat 은 어떤 환경에서 클론해도 CRLF 여야 한다 (LF 로 내려오면 label/goto 가 깨진다)
+*.bat text eol=crlf

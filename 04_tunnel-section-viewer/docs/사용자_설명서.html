@@ -1,0 +1,217 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NATM 내공단면 산정 뷰어 — 사용자 설명서</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;color:#16202b;background:#fff;
+  max-width:1020px;margin:0 auto;padding:34px 40px 70px;line-height:1.62;font-size:15px}
+h1{font-size:26px;letter-spacing:-.4px;border-bottom:3px solid #16202b;padding-bottom:10px}
+.sub{color:#5a6674;font-size:13.5px;margin:9px 0 6px}
+h2{font-size:19px;margin:34px 0 12px;padding-left:11px;border-left:5px solid #1d4ed8}
+h3{font-size:15.5px;margin:20px 0 8px;color:#1d4ed8}
+p{margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0 6px}
+th,td{border:1px solid #c8d0da;padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#eef2f7;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+code{background:#f1f4f8;border:1px solid #dde3ea;border-radius:4px;padding:1px 5px;font-size:13px}
+figure{margin:14px 0 18px}
+figure img{width:100%;border:1px solid #c8d0da;border-radius:6px;display:block}
+figcaption{font-size:12.5px;color:#5a6674;margin-top:6px}
+ol,ul{margin:8px 0 8px 22px}li{margin:4px 0}
+.tip{background:#eef6ff;border:1px solid #b9d5f5;border-radius:7px;padding:11px 15px;margin:12px 0;font-size:14px}
+.warn{background:#fff8e6;border:1px solid #e6c96b;border-radius:7px;padding:11px 15px;margin:12px 0;font-size:14px}
+.bad{background:#fff0f0;border:1px solid #e9b0b0;border-radius:7px;padding:11px 15px;margin:12px 0;font-size:14px}
+.steps{counter-reset:s;list-style:none;margin-left:0}
+.steps li{counter-increment:s;position:relative;padding-left:38px;margin:10px 0}
+.steps li:before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;
+  background:#1d4ed8;color:#fff;border-radius:50%;text-align:center;font-weight:700;font-size:14px;line-height:26px}
+.flow{display:flex;gap:0;align-items:stretch;margin:12px 0;flex-wrap:wrap}
+.flow .s{flex:1;min-width:120px;border:1px solid #c8d0da;border-radius:7px;padding:10px 8px;text-align:center;background:#f8fafc}
+.flow .s b{display:block;font-size:14px}
+.flow .s span{font-size:11.5px;color:#5a6674}
+.flow .a{display:flex;align-items:center;color:#9aa7b5;padding:0 7px;font-size:19px}
+.kv{color:#5a6674;font-size:12.5px}
+@media print{body{padding:0;font-size:12px}h2{page-break-after:avoid}figure{page-break-inside:avoid}}
+</style></head><body>
+
+<h1>NATM 도로터널 내공단면 산정 뷰어 — 사용자 설명서</h1>
+<div class="sub">배포판 v1.0 (2026-08-25) · 23번 프로젝트 · 한국종합기술 기술연구소 수신자료 기반</div>
+
+<h2>1. 이 도구는 무엇인가</h2>
+<p><b>설계 조건을 넣으면 NATM 도로터널의 3심원 내공단면을 그 자리에서 그려 보이고, 조건을 바꿔가며 만든 대안들을
+비교·판정해 하나를 고르게 해 주는 도구</b>입니다. 고른 안은 도면(DXF)·계약(JSON)·표(CSV)·검토보고서로 바로 뽑힙니다.</p>
+
+<div class="flow">
+  <div class="s"><b>시설한계</b><span>차로·길어깨·높이·헌치</span></div>
+  <div class="a">→</div>
+  <div class="s"><b>결정변수 4축</b><span>중심거리·편경사·EL1·중심각</span></div>
+  <div class="a">→</div>
+  <div class="s"><b>3심원 산정</b><span>R1 · R2 · R2′</span></div>
+  <div class="a">→</div>
+  <div class="s"><b>판정</b><span>편평률·면적·여유폭</span></div>
+  <div class="a">→</div>
+  <div class="s"><b>대안 선정</b><span>파레토·형상비교</span></div>
+  <div class="a">→</div>
+  <div class="s"><b>산출</b><span>DXF·JSON·CSV·보고서</span></div>
+</div>
+
+<div class="warn"><b>범위</b> — 내공선부터 굴착선까지입니다. 지보패턴·록볼트·배수공·Revit 애드인은 들어 있지 않습니다.</div>
+
+<h2>2. 실행</h2>
+<ol class="steps">
+  <li><b><code>RUN.bat</code> 더블클릭.</b> 브라우저가 자동으로 열립니다. 창을 닫으면 종료됩니다.</li>
+  <li>설치할 것은 없습니다. <b>파이썬 3.8 이상</b>만 있으면 됩니다. 없으면 RUN.bat 이 다운로드 주소를 알려 줍니다
+      (설치 시 <code>Add python.exe to PATH</code> 체크).</li>
+  <li>8801 번 포트를 다른 프로그램이 쓰고 있으면 <b>8802, 8803… 으로 자동으로 옮겨</b> 뜹니다. 창에 실제 주소가 찍힙니다.</li>
+</ol>
+<div class="tip"><b>안 되면 <code>CHECK.bat</code> 더블클릭.</b> 파이썬·필수파일·엔진 계산·포트·쓰기권한을 검사해
+화면과 <code>CHECK_RESULT.txt</code> 에 남깁니다. <code>[FAIL]</code> 줄이 있으면 그 파일을 그대로 보내 주시면 됩니다.</div>
+
+<h2>3. 화면 구성</h2>
+<figure><img src="img/fig1_화면구성.png" alt="화면 구성">
+<figcaption>그림 1 — 실제 화면. 번호별 설명은 그림 아래 범례 참조.</figcaption></figure>
+
+<h2>4. 5분 따라하기</h2>
+<ol class="steps">
+  <li><b>시설한계를 확인한다.</b> 좌측 <i>시설한계</i> 칸의 차로폭·길어깨·통과높이 H·헌치 a/b 를 현장 값으로 맞춥니다.
+      단위는 <b>m</b> 입니다. 바꾸는 즉시 가운데 단면이 다시 그려집니다.</li>
+  <li><b>공동구를 넣는다.</b> 좌·우 폭/높이. 이 사각형이 측벽 반지름을 결정하는 경우가 많습니다.</li>
+  <li><b>결정변수 4축을 슬라이더로 훑어본다.</b> 도로 중심거리 · 편경사 · 중심높이 EL1 · 중심각 θ 를 움직이면
+      상단 카드(R1 / 면적 / 편평률 / 여유)가 실시간으로 바뀝니다. 어느 변수가 무엇을 키우는지 감을 잡는 단계입니다.</li>
+  <li><b>스윕 범위를 정하고 <span class="kv">[스윕 실행]</span></b>. 기본값은 900조합이고 1초 안에 끝납니다.
+      오른쪽에 파레토 산점도와 대안 표가 채워집니다.</li>
+  <li><b>대안을 고른다.</b> 표의 행을 클릭하면 그 조건이 즉시 왼쪽 단면에 반영됩니다(역추적).
+      형상을 나란히 보고 싶으면 <span class="kv">[대안 형상 비교]</span> 탭에서 상위 12안을 한눈에 봅니다.</li>
+  <li><b>뽑는다.</b> 상단 <span class="kv">[검토보고서]</span> 로 보고서를, <span class="kv">[DXF] [JSON] [CSV]</span> 로 산출물을 내려받습니다.</li>
+</ol>
+
+<h2>5. 단면 구성 요소</h2>
+<figure><img src="img/fig2_단면요소.png" alt="단면 구성 요소">
+<figcaption>그림 2 — 색으로 구간을 구분합니다. 파랑 R1(상부호), 노랑 R2(좌측벽), 분홍 R2′(우측벽).</figcaption></figure>
+
+<table>
+<tr><th style="width:150px">요소</th><th>화면 표시</th><th>의미</th></tr>
+<tr><td>시설한계</td><td>초록 실선</td><td>차량이 지나가야 하는 공간. 이 안으로 구조물이 들어오면 안 됩니다.</td></tr>
+<tr><td>시공오차 오프셋</td><td>초록 점선</td><td>시설한계를 시공오차만큼 바깥으로 벌린 선. R1 은 <b>이 선</b>을 감싸도록 잡습니다.</td></tr>
+<tr><td>내공선</td><td>파랑·노랑·분홍</td><td>3심원 라이닝 안쪽 면. R1(상부) + R2/R2′(좌우 측벽).</td></tr>
+<tr><td>O1 / O2 / O2′</td><td>점 + 라벨</td><td>각 원호의 중심. O1 은 터널 중심축 위 EL1 높이에 있습니다.</td></tr>
+<tr><td>스프링잉 L / R</td><td>흰 점</td><td>상부호가 끝나고 측벽호로 넘어가는 접점. 중심각 θ 의 절반 위치입니다.</td></tr>
+<tr><td>공동구</td><td>주황 사각형</td><td>노면 위 좌·우. 라이닝 안쪽에 들어와야 합니다.</td></tr>
+<tr><td>부대공</td><td>보라 실선/점선</td><td>검사원통로·제트팬. <b>실선 = 제약 반영</b>, 점선 = 표시만.</td></tr>
+<tr><td>라이닝·숏크리트</td><td>회색 실선</td><td>내공선을 동심으로 밀어낸 면.</td></tr>
+<tr><td>굴착선</td><td>빨강 점선</td><td>여굴까지 포함한 최외곽. 이 면적이 <b>굴착단면적</b>입니다.</td></tr>
+</table>
+
+<h2>6. 입력 항목</h2>
+
+<h3>결정 변수 (4축) — 이걸 바꿔가며 대안을 만듭니다</h3>
+<table>
+<tr><th style="width:140px">항목</th><th>단위</th><th>의미</th><th>키우면</th></tr>
+<tr><td>도로 중심거리</td><td>m</td><td>터널 중심에서 도로 중심까지. 음수 = 도로가 왼쪽</td><td>단면이 한쪽으로 쏠려 좌우 측벽 반지름이 갈립니다</td></tr>
+<tr><td>편경사</td><td>%</td><td>노면 기울기. 도로·시설한계·공동구가 함께 기웁니다(<b>라이닝은 연직 유지</b>)</td><td>한쪽 어깨가 올라가 R1 요구가 커집니다</td></tr>
+<tr><td>중심높이 EL1</td><td>m</td><td>R1 원 중심의 높이(노면 기준)</td><td>중심이 올라가 상부호가 납작해지고 편평률이 커집니다</td></tr>
+<tr><td>중심각 θ</td><td>°</td><td>상부호가 차지하는 중심각</td><td>스프링잉이 내려가 측벽 원호가 짧아집니다</td></tr>
+</table>
+
+<h3>시설한계 · 공동구 · 단면구성 · 부대공</h3>
+<table>
+<tr><th style="width:150px">묶음</th><th>항목</th><th>기본값</th><th>비고</th></tr>
+<tr><td rowspan="4">시설한계</td><td>좌/우 차도폭</td><td>3.0 / 3.6 m</td><td rowspan="4">「도로의 구조·시설 기준에 관한 규칙」 계열</td></tr>
+<tr><td>좌/우 길어깨</td><td>1.2 / 3.0 m</td></tr>
+<tr><td>통과높이 H</td><td>4.8 m</td></tr>
+<tr><td>헌치 a / b</td><td>1.0 / 0.8 m</td></tr>
+<tr><td>시공오차</td><td>시설한계 오프셋</td><td>50 mm</td><td>R1 산정의 여유. 검토보고서 기준값</td></tr>
+<tr><td rowspan="2">공동구</td><td>좌 폭 × 높이</td><td>0.8 × 0.9 m</td><td rowspan="2">기계·전기 설비 고려</td></tr>
+<tr><td>우 폭 × 높이</td><td>0.8 × 0.6 m</td></tr>
+<tr><td rowspan="3">단면 구성</td><td>라이닝 두께</td><td>0.3 m</td><td rowspan="3">동심 오프셋. 누적해서 굴착선까지</td></tr>
+<tr><td>숏크리트</td><td>0.1 m</td></tr>
+<tr><td>여굴</td><td>0.1 m</td></tr>
+<tr><td rowspan="2">부대공</td><td>검사원통로</td><td>0.75 × 1.71 m</td><td rowspan="2"><b>배치는 가정값</b>. 표시/제약을 따로 켭니다</td></tr>
+<tr><td>제트팬 Φ · 이격</td><td>1.5 m · 0.3D</td></tr>
+</table>
+
+<div class="tip"><b>부대공의 "표시" 와 "제약 반영" 은 다릅니다.</b>
+<b>표시</b>만 켜면 화면에 점선으로 그려만 지고 산정에는 안 들어갑니다.
+<b>제약 반영</b>을 켜면 R1·R2 를 그 형상까지 품도록 다시 풉니다.
+기본 규격(Φ1500·750×1710)에서는 여유가 있어 결과가 바뀌지 않습니다 — 팬을 Φ2000 이상으로 키우면 그때부터 R1 이 실제로 커집니다.</div>
+
+<h3>판정 기준</h3>
+<table>
+<tr><th style="width:150px">항목</th><th>기본값</th><th>의미</th></tr>
+<tr><td>편평률 하한</td><td>0.55</td><td>내공높이 ÷ 내공폭. 클수록 형상이 안정적(안전성 지표)</td></tr>
+<tr><td>여유폭 하한</td><td>50 mm</td><td>시설한계에서 라이닝까지의 최소 반경 여유</td></tr>
+</table>
+<div class="bad"><b>이 두 기준값은 원자료에 없습니다.</b> 편평률 0.55 는 원본 결과에서 OK 로 표기된 행들의 값에서 역산한 <b>추정치</b>,
+여유폭 50mm 는 시공오차를 <b>잠정</b>으로 쓴 값입니다. 확정 기준을 받으면 화면에서 바꿔 다시 돌리면 됩니다 — 엔진은 그대로입니다.</div>
+
+<h2>7. 대안 탐색</h2>
+<figure><img src="img/fig3_대안비교.png" alt="대안 형상 비교">
+<figcaption>그림 3 — 판정 OK 안을 면적 오름차순 12개. 클릭하면 본 화면에 반영됩니다.</figcaption></figure>
+
+<h3>파레토 산점도 읽는 법</h3>
+<ul>
+<li>가로축 = <b>내공단면적</b>. 왼쪽일수록 굴착이 적어 경제적입니다.</li>
+<li>세로축 = <b>편평률</b>. 위쪽일수록 형상이 안정적입니다.</li>
+<li>따라서 <b>왼쪽 위</b>가 좋은 영역입니다. 초록(판정 OK) 중 왼쪽 위 경계선에 있는 점들이 <b>서로 우열을 가릴 수 없는 후보</b>입니다.</li>
+<li>노랑 = 지금 화면에 그려진 안, 분홍 = 판정 OK 중 최소면적 안.</li>
+</ul>
+<div class="tip"><b>표의 행을 클릭</b>하면 그 조건이 슬라이더까지 반영돼 왼쪽 단면이 바뀝니다.
+숫자로 고른 뒤 형상으로 확인하는 순서가 실수를 줄입니다.</div>
+
+<h2>8. 산출물</h2>
+<table>
+<tr><th style="width:110px">버튼</th><th>내용</th><th style="width:130px">저장 위치</th></tr>
+<tr><td>DXF</td><td>실제 <b>ARC/LINE 엔티티</b>(폴리라인 근사가 아님). 레이어 9종으로 분리, 단위 mm.
+  내공선·라이닝·숏크리트·굴착선·시설한계·공동구·부대공·중심점</td><td><code>08_export/</code></td></tr>
+<tr><td>JSON</td><td>계약 <code>tn_section/1.0</code>. 중심·반지름·각도·끝점. <b>이 한 파일이면 단면을 그대로 재구성</b>할 수 있습니다</td><td><code>08_export/</code></td></tr>
+<tr><td>CSV</td><td>스윕 결과 전체(굴착단면적 포함). 엑셀에서 바로 열립니다</td><td><code>08_export/</code></td></tr>
+<tr><td>검토보고서</td><td>입력값 · 선정결과 · 단면도 · 대안비교 상위10 · <b>산정 근거와 한계</b>. HTML 이라 브라우저에서 인쇄하면 PDF 가 됩니다</td><td><code>07_report/</code></td></tr>
+</table>
+<div class="warn"><b>DXF 만 <code>ezdxf</code> 가 필요합니다.</b> 없으면 그 버튼만 막히고 뷰어·보고서·JSON·CSV 는 전부 정상입니다.
+필요하면 <code>pip install ezdxf</code>.</div>
+
+<h2>9. 용어</h2>
+<table>
+<tr><th style="width:150px">용어</th><th>뜻</th></tr>
+<tr><td>시설한계</td><td>차량·화물이 지나가는 데 반드시 비워 둬야 하는 공간의 경계</td></tr>
+<tr><td>내공</td><td>터널 라이닝 안쪽의 빈 공간. 내공단면적 = 그 면적</td></tr>
+<tr><td>3심원</td><td>중심이 셋인 아치. 상부 R1 + 좌우 측벽 R2/R2′. 각 원호는 접점에서 <b>접선이 이어집니다</b></td></tr>
+<tr><td>스프링잉</td><td>상부호와 측벽호가 만나는 접점</td></tr>
+<tr><td>편평률</td><td>내공높이 ÷ 내공폭. 납작할수록 작아집니다</td></tr>
+<tr><td>편경사</td><td>배수·주행을 위한 노면 횡단 기울기(%)</td></tr>
+<tr><td>공동구</td><td>전기·통신 설비를 넣는 측면 함체</td></tr>
+<tr><td>여굴</td><td>굴착 시 계획선보다 더 파이는 여유</td></tr>
+</table>
+
+<h2>10. ★ 알고 써야 할 한계</h2>
+<div class="bad">
+<b>이 도구가 보장하는 것과 보장하지 않는 것은 다릅니다.</b> 보고서에도 같은 내용이 자동으로 들어갑니다.
+<ul>
+<li><b>R1 은 근거가 강합니다.</b> "시설한계+시공오차를 감싸는 최소 반지름(5mm 격자)" 규칙이
+    발주처 원본 결과 60행 중 <b>56행과 정확히 일치</b>합니다. 나머지 4행은 원본이 9~14mm 크게 잡았고 <b>원인은 확인되지 않았습니다</b>.</li>
+<li><b>R2 / R2′ 는 새로 정의한 값입니다.</b> 원본의 산정식이 제공 자료에 없어 <b>재현하지 않았습니다</b>.
+    스프링잉에서 접선 연속으로 잇고 그 측 제약을 품는 최소 반지름으로 구성한, 표준 작도에 따른 값입니다.
+    원본 60행은 뷰어의 <span class="kv">[원본 60행]</span> 탭에 <b>참조용으로만</b> 병기해 두었습니다.</li>
+<li><b>판정 기준(편평률·여유폭)은 잠정값</b>입니다(§6 참조).</li>
+<li><b>부대공 배치는 가정</b>입니다. 기준을 받으면 위치 파라미터를 바꾸면 됩니다.</li>
+<li><b>5심원(R3/R3′)</b>은 구현돼 있으나, 공동구·시설한계 하단이 노면 레벨에서 최대폭을 규정하는 배치에서는
+    성립하지 않아 <b>3심원으로 자동 복귀</b>하고 사유를 표시합니다.</li>
+<li>지보패턴·록볼트·배수공은 <b>미반영</b>입니다.</li>
+</ul>
+</div>
+
+<h2>11. 문제 해결</h2>
+<table>
+<tr><th style="width:230px">증상</th><th>확인</th></tr>
+<tr><td>창이 떴다 바로 닫힌다</td><td><code>CHECK.bat</code> 실행 → <code>CHECK_RESULT.txt</code> 의 <code>[FAIL]</code> 줄 확인</td></tr>
+<tr><td>"Python 3 was not found"</td><td>파이썬 3.8+ 설치(설치 시 PATH 체크). 또는 <code>runtime\python.exe</code> 로 포터블 파이썬 배치</td></tr>
+<tr><td>브라우저가 안 열린다</td><td>검은 창에 찍힌 주소(<code>http://localhost:8801/</code> 등)를 직접 입력</td></tr>
+<tr><td>DXF 버튼만 오류</td><td><code>pip install ezdxf</code>. 다른 기능은 영향 없음</td></tr>
+<tr><td>화면이 비어 있다</td><td>브라우저 강력 새로고침(<b>Ctrl+F5</b>). 인터넷 익스플로러는 지원하지 않음</td></tr>
+<tr><td>스윕이 오래 걸린다</td><td>스윕 범위의 조합 수를 줄입니다(간격을 키우면 조합이 급감)</td></tr>
+<tr><td>결과가 이상하다</td><td><code>python 04_engine/gate_check.py</code> 로 게이트 9종 전수 검사(스윕 900조합)</td></tr>
+</table>
+
+<p class="sub" style="margin-top:30px">배포판 v1.0 · 2026-08-25 · 기술 상세는 <code>AI_GUIDE.md</code> / <code>docs/CODE_MAP.md</code> / <code>docs/API.md</code></p>
+</body></html>
